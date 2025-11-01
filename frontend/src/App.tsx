@@ -8,8 +8,10 @@ function App() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const serverResponse = await fetch("http://localhost:3500");
-      console.log(serverResponse);
+      const serverResponse = await fetch("http://localhost:3500/", {
+        method: "GET",
+      });
+      console.log(await serverResponse.json());
     };
     fetchData();
   }, []);
