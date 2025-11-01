@@ -1,42 +1,49 @@
-import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { useState } from "react";
 import "./App.css";
+import type { Song } from "./types/types";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [query, setQuery] = useState("");
+  const [currentSong, setCurrentSong] = useState<Song>();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const serverResponse = await fetch("http://localhost:3500/", {
+  const fetchPreviewURL = async (query: string) => {
+    const response = await fetch(
+      import.meta.env.VITE_API_URL + `/songs?query=${query}`,
+      {
         method: "GET",
-      });
-      console.log(await serverResponse.json());
-    };
-    fetchData();
-  }, []);
+      }
+    ).then((res) => res.json());
+    console.log(response);
+    setCurrentSong(response);
+  };
+
+  const handleClick = () => {
+    console.log("SUBMITTING...");
+    fetchPreviewURL(query);
+  };
+
   return (
     <>
+      {currentSong && (
+        <>
+          <div className="flex flex-col">
+            <h2>{currentSong.trackName}</h2>
+            <img src={currentSong?.artworkUrl100} alt="artwork" />
+          </div>
+          <audio controls src={currentSong?.previewUrl} />
+        </>
+      )}
+
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <input
+          type="text"
+          placeholder="Enter song name"
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button type="button" onClick={handleClick}>
+          Submit
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }

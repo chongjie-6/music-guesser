@@ -6,9 +6,10 @@ const corsOptions = require("./config/corsOptions");
 
 app.use(cors(corsOptions));
 
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "Welcome to the Music Guesser API" });
-});
+// Routes
+const songRoutes = require("./routes/songRoutes");
+
+app.use(songRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
