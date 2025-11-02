@@ -16,6 +16,21 @@ const getSongByQuery = async (req, res) => {
   }
 };
 
+const getSongsByQuery = async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ error: "query parameter is required" });
+  }
+  try {
+    const songs = await songService.getSongsByQuery(query);
+    res.status(200).json(songs);
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ error: e });
+  }
+};
 module.exports = {
   getSongByQuery,
+  getSongsByQuery,
 };

@@ -1,20 +1,16 @@
 import { useState } from "react";
 import "./App.css";
 import type { Song } from "./types/types";
+import { apiGet } from "./api/client";
 
 function App() {
   const [query, setQuery] = useState("");
-  const [currentSong, setCurrentSong] = useState<Song>();
+  const [currentSongs, setCurrentSongs] = useState<Song[]>();
 
   const fetchPreviewURL = async (query: string) => {
-    const response = await fetch(
-      import.meta.env.VITE_API_URL + `/songs?query=${query}`,
-      {
-        method: "GET",
-      }
-    ).then((res) => res.json());
-    console.log(response);
-    setCurrentSong(response);
+    const songs = await apiGet(`/songs?query=${query}`);
+    console.log(songs);
+    setCurrentSongs(songs);
   };
 
   const handleClick = () => {
@@ -24,15 +20,16 @@ function App() {
 
   return (
     <>
-      {currentSong && (
-        <>
-          <div className="flex flex-col">
-            <h2>{currentSong.trackName}</h2>
-            <img src={currentSong?.artworkUrl100} alt="artwork" />
-          </div>
-          <audio controls src={currentSong?.previewUrl} />
-        </>
-      )}
+      {currentSongs &&
+        currentSongs.map((song) => {
+          return (
+            <div key={song.trackName} className="flex flex-col">
+              <h2>{song.trackName}</h2>
+              <img src={song?.artworkUrl100} alt="artwork" />
+              <audio controls src={song?.previewUrl} />
+            </div>
+          );
+        })}
 
       <div>
         <input

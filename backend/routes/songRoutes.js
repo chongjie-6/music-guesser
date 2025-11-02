@@ -1,8 +1,8 @@
 const router = require("express").Router();
 
 // Controllers
-const songController = require("../controller/songController")
+const songController = require("../controller/songController");
 
-router.get("/songs", songController.getSongByQuery);
-
+router.get("/song", songController.getSongByQuery);
+router.get("/songs", songController.getSongsByQuery);
 module.exports = router;
