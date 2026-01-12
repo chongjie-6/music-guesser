@@ -1,8 +1,9 @@
 const router = require("express").Router();
+const limiter = require("../middleware/rateLimiter");
 
 // Controllers
 const songController = require("../controller/songController");
 
-router.get("/song", songController.getSongByQuery);
-router.get("/songs", songController.getSongsByQuery);
+router.get("/songs", limiter, songController.getSongsByQuery);
+
 module.exports = router;
