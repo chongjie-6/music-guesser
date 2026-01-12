@@ -2,24 +2,24 @@ import { useState } from "react";
 import "./App.css";
 import type { Song } from "./types/types";
 import { apiGet } from "./api/client";
+import { useQuery } from "@tanstack/react-query";
+import { useDebouncedCallback } from "use-debounce";
 
 function App() {
   const [query, setQuery] = useState("");
-  const [currentSongs, setCurrentSongs] = useState<Song[]>();
+  const [queryInput, setQueryInput] = useState("");
+  const debouncedQuery = useDebouncedCallback(() => {
+    setQuery(queryInput);
+  }, 300);
 
-  const fetchPreviewURL = async (query: string) => {
-    const songs = await apiGet(`/songs?query=${query}`);
-    console.log(songs);
-    setCurrentSongs(songs);
-  };
-
-  const handleClick = () => {
-    console.log("SUBMITTING...");
-    fetchPreviewURL(query);
-  };
+  const { data: currentSongs, error } = useQuery<Song[]>({
+    queryKey: [query],
+    queryFn: () => apiGet(`/songs`, { query, limit: "5" }),
+    enabled: query.length > 0,
+  });
 
   return (
-    <>
+    <div className="container">
       {currentSongs &&
         currentSongs.map((song) => {
           return (
@@ -31,17 +31,19 @@ function App() {
           );
         })}
 
+      {error && <div>Error fetching songs.</div>}
+
       <div>
         <input
           type="text"
           placeholder="Enter song name"
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => setQueryInput(e.target.value)}
         />
-        <button type="button" onClick={handleClick}>
+        <button type="button" onClick={() => debouncedQuery()}>
           Submit
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
