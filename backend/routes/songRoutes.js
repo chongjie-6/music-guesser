@@ -4,6 +4,6 @@ const limiter = require("../middleware/rateLimiter");
 // Controllers
 const songController = require("../controller/songController");
 
-router.get("/songs", limiter, songController.getSongsByQuery);
+router.get("/songs", songController.getSongsByQuery);
 
 module.exports = router;

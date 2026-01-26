@@ -1,5 +1,9 @@
+const io = require("../server");
 const createRoom = (req, res) => {
-  return;
+  const { roomID, maxPlayers } = req.body;
+  
+  io.join(roomID);
+
 };
 
 module.exports = {

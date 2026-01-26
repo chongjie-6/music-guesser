@@ -3,6 +3,6 @@ const limiter = require("../middleware/rateLimiter");
 
 const roomController = require("../controller/roomController");
 
-router.post("/createRoom", limiter, roomController.createRoom);
+router.post("/createRoom", roomController.createRoom);
 
 module.exports = router;

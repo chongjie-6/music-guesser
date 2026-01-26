@@ -4,8 +4,8 @@ import type { Song } from "./types/types";
 import { apiGet, apiPost } from "./api/client";
 import { useQuery } from "@tanstack/react-query";
 import { useDebouncedCallback } from "use-debounce";
-import { io } from "socket.io-client";
-const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3500");
+import { socket } from "./socket";
+import { bcrypt } from "bcryptjs";
 
 function App() {
   const [query, setQuery] = useState("");
@@ -25,7 +25,8 @@ function App() {
   });
 
   const onCreateRoom = async () => {
-    const io = await apiPost("/createRoom", { maxPlayers: 4 });
+    const roomID = crypto.randomUUID();
+    const io = await apiPost("/createRoom", { roomID: roomID, maxPlayers: 4 });
     console.log(io);
   };
 

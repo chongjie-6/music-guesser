@@ -10,19 +10,22 @@ const { createServer } = require("http");
 // Routes
 const songRoutes = require("./routes/songRoutes");
 const roomRoutes = require("./routes/roomRoutes");
+const limiter = require("./middleware/rateLimiter");
 
 app.use(songRoutes);
 app.use(roomRoutes);
 
-const server = createServer(app);
-const io = new Server(server);
+app.use(limiter);
 
-app.listen(port, () => {
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
+
+server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-io.on("connection", (socket) => {
-  console.log("a user connected");
-});
-
-module.exports = app;
+module.exports = { app, io };
