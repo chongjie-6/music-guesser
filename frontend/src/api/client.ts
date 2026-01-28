@@ -35,7 +35,6 @@ export async function apiPost(
     const response = await axios.post(finalEndpoint, body, {
       method: "POST",
     });
-    console.log(response);
 
     return response.data;
   } catch (e) {

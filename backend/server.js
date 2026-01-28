@@ -15,6 +15,7 @@ const limiter = require("./middleware/rateLimiter");
 app.use(songRoutes);
 app.use(roomRoutes);
 
+// Limiter
 app.use(limiter);
 
 const server = createServer(app);
@@ -24,8 +25,9 @@ const io = new Server(server, {
   },
 });
 
+const socketHandler = require("./sockets/index");
+socketHandler(io);
+
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
-module.exports = { app, io };

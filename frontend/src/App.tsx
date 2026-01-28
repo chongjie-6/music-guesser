@@ -1,11 +1,13 @@
 import { useState } from "react";
 import "./App.css";
 import type { Song } from "./types/types";
-import { apiGet, apiPost } from "./api/client";
+import { apiGet } from "./api/client";
 import { useQuery } from "@tanstack/react-query";
 import { useDebouncedCallback } from "use-debounce";
 import { socket } from "./socket";
-import { bcrypt } from "bcryptjs";
+import { useSocket } from "./hooks/useSocket";
+import { JoinRoomButton } from "./components/JoinRoomButton";
+import { CreateRoomButton } from "./components/CreateRoomButton";
 
 function App() {
   const [query, setQuery] = useState("");
@@ -13,6 +15,10 @@ function App() {
   const debouncedQuery = useDebouncedCallback(() => {
     setQuery(queryInput);
   }, 300);
+  const [socketMessage, setSocketMessage] = useState<string | null>(null);
+  const [roomID, setRoomID] = useState<string | "">("");
+
+  useSocket(socket, setSocketMessage);
 
   const {
     data: currentSongs,
@@ -23,12 +29,6 @@ function App() {
     queryFn: () => apiGet(`/songs`, { query, limit: "5" }),
     enabled: query.length > 0,
   });
-
-  const onCreateRoom = async () => {
-    const roomID = crypto.randomUUID();
-    const io = await apiPost("/createRoom", { roomID: roomID, maxPlayers: 4 });
-    console.log(io);
-  };
 
   return (
     <div className="mx-auto p-6 w-screen flex flex-col items-center space-y-5">
@@ -86,7 +86,18 @@ function App() {
         <div className="text-center text-gray-500 py-8">No songs found.</div>
       )}
 
-      <button onClick={onCreateRoom}>Create Room</button>
+      {socketMessage && <p className="text-red-500">{socketMessage}</p>}
+      <div className="space-x-2">
+        <input
+          type="text"
+          placeholder="Enter Room ID"
+          value={roomID}
+          onChange={(e) => setRoomID(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <JoinRoomButton socket={socket} roomID={roomID} />
+        <CreateRoomButton socket={socket} />
+      </div>
     </div>
   );
 }
