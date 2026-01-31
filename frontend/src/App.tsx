@@ -8,6 +8,7 @@ import { socket } from "./socket";
 import { useSocket } from "./hooks/useSocket";
 import { JoinRoomButton } from "./components/JoinRoomButton";
 import { CreateRoomButton } from "./components/CreateRoomButton";
+import { StartGameButton } from "./components/StartGameButton";
 
 function App() {
   const [query, setQuery] = useState("");
@@ -97,6 +98,7 @@ function App() {
         />
         <JoinRoomButton socket={socket} roomID={roomID} />
         <CreateRoomButton socket={socket} />
+        <StartGameButton socket={socket} roomID={roomID} />
       </div>
     </div>
   );
