@@ -1,9 +1,8 @@
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { useEffect } from "react";
 import { type Socket } from "socket.io-client";
 
 export const useSocket = (
   socket: Socket | null,
-  setSocketMessage: Dispatch<SetStateAction<string | null>>,
 ) => {
   useEffect(() => {
     if (!socket) return;

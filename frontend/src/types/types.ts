@@ -8,3 +8,10 @@ export type Song = {
   releaseDate: string;
   trackName: string;
 };
+
+export type Message = {
+  message: string;
+  senderId: string;
+  senderName: string;
+  timestamp: number;
+};

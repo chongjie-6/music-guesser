@@ -1,25 +1,15 @@
-import { useState } from "react";
-import "./App.css";
-import type { Song } from "./types/types";
-import { apiGet } from "./api/client";
 import { useQuery } from "@tanstack/react-query";
+import { apiGet } from "../api/client";
+import type { Song } from "../types/types";
 import { useDebouncedCallback } from "use-debounce";
-import { socket } from "./socket";
-import { useSocket } from "./hooks/useSocket";
-import { JoinRoomButton } from "./components/JoinRoomButton";
-import { CreateRoomButton } from "./components/CreateRoomButton";
-import { StartGameButton } from "./components/StartGameButton";
+import { useState } from "react";
 
-function App() {
+export default function SongSearchBar() {
   const [query, setQuery] = useState("");
   const [queryInput, setQueryInput] = useState("");
   const debouncedQuery = useDebouncedCallback(() => {
     setQuery(queryInput);
   }, 300);
-  const [socketMessage, setSocketMessage] = useState<string | null>(null);
-  const [roomID, setRoomID] = useState<string | "">("");
-
-  useSocket(socket, setSocketMessage);
 
   const {
     data: currentSongs,
@@ -30,9 +20,8 @@ function App() {
     queryFn: () => apiGet(`/songs`, { query, limit: "5" }),
     enabled: query.length > 0,
   });
-
   return (
-    <div className="mx-auto p-6 w-screen flex flex-col items-center space-y-5">
+    <>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">Song Search</h1>
         <div className="flex gap-2 w-full max-w-md">
@@ -61,7 +50,6 @@ function App() {
           Error fetching songs.
         </div>
       )}
-
       {currentSongs && currentSongs.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-xl">
           {currentSongs.map((song) => (
@@ -86,22 +74,6 @@ function App() {
       {currentSongs && currentSongs.length === 0 && (
         <div className="text-center text-gray-500 py-8">No songs found.</div>
       )}
-
-      {socketMessage && <p className="text-red-500">{socketMessage}</p>}
-      <div className="space-x-2">
-        <input
-          type="text"
-          placeholder="Enter Room ID"
-          value={roomID}
-          onChange={(e) => setRoomID(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <JoinRoomButton socket={socket} roomID={roomID} />
-        <CreateRoomButton socket={socket} />
-        <StartGameButton socket={socket} roomID={roomID} />
-      </div>
-    </div>
+    </>
   );
 }
-
-export default App;

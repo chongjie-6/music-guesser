@@ -1,7 +1,7 @@
 const {
   checkRoomExists,
   checkMaxPlayersReached,
-} = require("../service/roomService");
+} = require("../../service/roomService");
 
 module.exports = (io, socket) => {
   /**

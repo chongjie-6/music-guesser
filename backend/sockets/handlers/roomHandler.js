@@ -1,7 +1,7 @@
 const {
   checkRoomExists,
   checkMaxPlayersReached,
-} = require("../service/roomService");
+} = require("../../service/roomService");
 
 module.exports = (io, socket) => {
   /**
@@ -10,12 +10,12 @@ module.exports = (io, socket) => {
    */
   socket.on("create-room", (roomID) => {
     if (!roomID || roomID.trim() === "") {
-      socket.emit("message", "Invalid room ID");
+      socket.emit("error", "Invalid room ID");
       return;
     }
-    
+
     if (checkRoomExists(roomID, io)) {
-      socket.emit("message", "Room already exists");
+      socket.emit("error", "Room already exists");
       return;
     }
 
@@ -29,20 +29,26 @@ module.exports = (io, socket) => {
    * Payload: { roomID: string }
    */
   socket.on("join-room", (roomID) => {
+    console.log(roomID);
     if (!roomID || roomID.trim() === "") {
-      socket.emit("message", "Invalid room ID");
+      socket.emit("error", "Invalid room ID");
+      return;
+    }
+
+    if (socket.id === roomID) {
+      socket.emit("error", "You are already in the room!");
       return;
     }
 
     if (!checkRoomExists(roomID, io)) {
-      socket.emit("message", "Room does not exist");
+      socket.emit("error", "Room does not exist");
       return;
     }
 
     if (checkMaxPlayersReached(roomID, io))
-      socket.emit("message", "Room is full");
+      socket.emit("error", "Room is full");
 
-    socket.to(roomID).emit("user-joined", socket.id);
+    io.in(roomID).emit("user-joined", socket.id);
     socket.join(roomID);
     socket.emit("message", `Successfully joined roomID: ${roomID}`);
     console.log(`${socket.id} joined room: ${roomID}`);
