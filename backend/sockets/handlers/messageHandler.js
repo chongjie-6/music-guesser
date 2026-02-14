@@ -2,12 +2,10 @@ module.exports = (io, socket) => {
   /**
    * Event: receive-message
    */
-  socket.on("chatMessage", ({ roomId, message }) => {
+  socket.on("send-message", ({ roomId, message }) => {
     if (message.trim() === "") return;
-    console.log(roomId, message);
-    console.log("JSOILFJSDLIJF");
 
-    const messageData = { message: message, senderId: socket.id };
+    const messageData = { message: message, senderId: socket.id, senderName: socket.user?.name || "Anonymous" };
 
     console.log("Emitting Message to room:", roomId, messageData);
     io.in(roomId).emit("newMessage", messageData);

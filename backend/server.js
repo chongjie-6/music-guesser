@@ -9,11 +9,9 @@ const { createServer } = require("http");
 
 // Routes
 const songRoutes = require("./routes/songRoutes");
-const roomRoutes = require("./routes/roomRoutes");
 const limiter = require("./middleware/rateLimiter");
 
 app.use(songRoutes);
-app.use(roomRoutes);
 
 // Limiter
 app.use(limiter);

@@ -12,7 +12,7 @@ export default function ChatMessages({
     <div className="bg-white text-black p-3 rounded-lg space-y-2">
       {messages.map((message, idx) => (
         <div key={idx}>
-          {message.senderId}: {message.message}
+          {message.senderName || message.senderId}: {message.message}
         </div>
       ))}
 

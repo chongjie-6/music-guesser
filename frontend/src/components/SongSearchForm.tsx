@@ -50,6 +50,7 @@ export default function SongSearchBar() {
           Error fetching songs.
         </div>
       )}
+      
       {currentSongs && currentSongs.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-xl">
           {currentSongs.map((song) => (
