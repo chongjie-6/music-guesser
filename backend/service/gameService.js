@@ -1,20 +1,31 @@
 const { createClient } = require("./spotifyService");
 
 const MAX_LIMIT = 10;
-const MAX_OFFSET = 1000;
+const MAX_OFFSET = 2;
 const songsByRoom = new Map();
 
-const QUERIES = ["Today's Top Hits year:2000-2010"];
+const QUERIES = [
+  "genre:pop year:2010-2020",
+  // "genre:pop year:2010-2020",
+  // "genre:pop year:2000-2010",
+  // "genre:dance-pop year:2010-2020",
+  // "genre:indie-pop year:2010-2020",
+];
 
 const normalizeText = (value = "") =>
   String(value)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\(\[（［][^)\]）］]*[\)\]）］]|[^\w\s]/g, "")
+    .trim()
     .replace(/[^a-z0-9]/g, "");
 
-const getRandomQuery = () =>
-  QUERIES[Math.floor(Math.random() * QUERIES.length)];
+const getRandomQuery = () => {
+  return encodeURIComponent(
+    QUERIES[Math.floor(Math.random() * QUERIES.length)],
+  );
+};
 
 const buildPublicRound = (song, round) => ({
   round,
@@ -64,7 +75,6 @@ const getRandomSong = async () => {
   }
   const best = results.find((r) => r.previewUrl) ?? results[0];
 
-  console.log(best);
   return best;
 };
 

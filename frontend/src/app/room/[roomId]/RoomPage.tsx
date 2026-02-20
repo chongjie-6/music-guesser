@@ -56,7 +56,11 @@ export default function RoomPage() {
   return (
     <main className="mx-auto grid min-h-screen w-full max-w-7xl gap-4 px-4 py-6 lg:grid-cols-[2fr_1fr]">
       <div>
-        {error && <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
+        {error && (
+          <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            {error}
+          </div>
+        )}
         <ChatMessages messages={messages} roomId={roomId} />
       </div>
 
@@ -78,17 +82,30 @@ export default function RoomPage() {
           <section className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
             <h2 className="font-semibold">Round {round.round}</h2>
             <p className="text-sm text-slate-600">Artist: {round.artistName}</p>
-            <p className="text-sm text-slate-600">Genre: {round.primaryGenreName}</p>
-            <p className="text-sm text-slate-600">Release: {new Date(round.releaseDate).getFullYear()}</p>
-            <audio controls src={round.previewUrl} className="mt-2 w-full" />
+            <p className="text-sm text-slate-600">
+              Genre: {round.primaryGenreName}
+            </p>
+            <p className="text-sm text-slate-600">
+              Release: {new Date(round.releaseDate).getFullYear()}
+            </p>
+            <audio
+              controls
+              src={round.previewUrl}
+              className="mt-2 w-full"
+              autoPlay={true}
+            />
           </section>
         )}
 
-        {lastWinnerMessage && <p className="mt-4 text-sm text-emerald-700">{lastWinnerMessage}</p>}
+        {lastWinnerMessage && (
+          <p className="mt-4 text-sm text-emerald-700">{lastWinnerMessage}</p>
+        )}
 
         <section className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <h3 className="font-medium">Scoreboard</h3>
-          {Object.keys(scores).length === 0 && <p className="text-sm text-slate-500">No scores yet</p>}
+          {Object.keys(scores).length === 0 && (
+            <p className="text-sm text-slate-500">No scores yet</p>
+          )}
           <div className="mt-2 space-y-1">
             {Object.entries(scores).map(([name, score]) => (
               <p key={name} className="text-sm text-slate-700">
