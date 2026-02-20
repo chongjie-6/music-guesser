@@ -8,10 +8,7 @@ app.use(cors(corsOptions));
 const { createServer } = require("http");
 
 // Routes
-const songRoutes = require("./routes/songRoutes");
 const limiter = require("./middleware/rateLimiter");
-
-app.use(songRoutes);
 
 // Limiter
 app.use(limiter);
