@@ -1,22 +1,20 @@
+const { createClient } = require("./spotifyService");
+
+const MAX_LIMIT = 10;
+const MAX_OFFSET = 1000;
 const songsByRoom = new Map();
 
-const ALBUM_QUERIES = [
-  "top global hits",
-  "top global hits 2010s",
-  "global hits",
-  "best of pop hits",
-  "greatest hits 2010s",
-];
+const QUERIES = ["Today's Top Hits year:2000-2010"];
 
 const normalizeText = (value = "") =>
-  value
+  String(value)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, "");
 
 const getRandomQuery = () =>
-  ALBUM_QUERIES[Math.floor(Math.random() * ALBUM_QUERIES.length)];
+  QUERIES[Math.floor(Math.random() * QUERIES.length)];
 
 const buildPublicRound = (song, round) => ({
   round,
@@ -26,50 +24,53 @@ const buildPublicRound = (song, round) => ({
   releaseDate: song.releaseDate,
 });
 
-const getSongsFromAlbum = async (collectionId) => {
-  const response = await fetch(
-    `https://itunes.apple.com/lookup?id=${collectionId}&entity=song&limit=50`
-  );
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch album tracks");
-  }
-
-  return (data.results || []).filter(
-    (item) =>
-      item.wrapperType === "track" &&
-      item.kind === "song" &&
-      item.previewUrl &&
-      item.trackName
-  );
-};
-
 const getRandomSong = async () => {
-  const query = encodeURIComponent(getRandomQuery());
-  const albumResponse = await fetch(
-    `https://itunes.apple.com/search?term=${query}&entity=album&limit=20`
+  const query = getRandomQuery();
+  const token = await createClient();
+
+  const random_offset = Math.floor(Math.random() * MAX_OFFSET);
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=${MAX_LIMIT}&offset=${random_offset}&market=US`,
+    { headers: { Authorization: `Bearer ${token}` } },
   );
-  const albumData = await albumResponse.json();
 
-  if (!albumResponse.ok || !albumData.results?.length) {
-    throw new Error("Could not fetch albums for this round");
+  const tracksJSON = await response.json();
+  const tracks = tracksJSON.tracks.items;
+
+  if (!tracks.length) throw new Error("No tracks found on selected page");
+
+  const picked = tracks[Math.floor(Math.random() * tracks.length)];
+
+  const song_name = picked?.name ?? "";
+  const artist = (picked?.artists ?? []).map((a) => a.name).join(" ") || "";
+
+  if (!song_name) throw new Error("Picked track missing name");
+
+  const itunesTerm = encodeURIComponent(`${song_name} ${artist}`.trim());
+  const song_response = await fetch(
+    `https://itunes.apple.com/search?term=${itunesTerm}&entity=song&limit=20&country=US`,
+  );
+
+  if (!song_response.ok) {
+    const text = await song_response.text();
+    throw new Error(`iTunes search failed (${song_response.status}): ${text}`);
   }
 
-  const shuffledAlbums = [...albumData.results].sort(() => Math.random() - 0.5);
+  const song_data = await song_response.json();
+  const results = song_data?.results ?? [];
 
-  for (const album of shuffledAlbums) {
-    const albumSongs = await getSongsFromAlbum(album.collectionId);
-    if (albumSongs.length > 0) {
-      return albumSongs[Math.floor(Math.random() * albumSongs.length)];
-    }
+  if (!results.length) {
+    throw new Error("Could not find iTunes matches for this track");
   }
+  const best = results.find((r) => r.previewUrl) ?? results[0];
 
-  throw new Error("Could not find playable songs from fetched albums");
+  console.log(best);
+  return best;
 };
 
 const startRoomGame = async (roomId) => {
   const song = await getRandomSong();
+
   const initialState = {
     isActive: true,
     round: 1,
@@ -90,9 +91,7 @@ const getRoomGame = (roomId) => songsByRoom.get(roomId);
 
 const submitGuess = async ({ roomId, userId, userName, guess }) => {
   const game = songsByRoom.get(roomId);
-  if (!game?.isActive) {
-    return { status: "inactive" };
-  }
+  if (!game?.isActive) return { status: "inactive" };
 
   if (normalizeText(guess) !== game.normalizedAnswer) {
     return { status: "incorrect" };
