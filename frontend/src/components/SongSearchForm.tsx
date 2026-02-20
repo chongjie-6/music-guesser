@@ -20,60 +20,60 @@ export default function SongSearchBar() {
     queryFn: () => apiGet(`/songs`, { query, limit: "5" }),
     enabled: query.length > 0,
   });
+
   return (
     <>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Song Search</h1>
-        <div className="flex gap-2 w-full max-w-md">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-slate-900">Song search</h2>
+        <div className="mt-4 flex w-full max-w-2xl flex-col gap-2 sm:flex-row">
           <input
             type="text"
-            placeholder="Enter song name"
+            placeholder="Search artist or song"
             value={queryInput}
             onChange={(e) => setQueryInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && debouncedQuery()}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 outline-none ring-slate-400 placeholder:text-slate-400 focus:ring-2"
           />
           <button
             type="button"
             onClick={() => debouncedQuery()}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700"
           >
             Search
           </button>
         </div>
       </div>
 
-      {isLoading && <div className="text-center py-8">Loading...</div>}
+      {isLoading && <div className="py-6 text-center text-slate-500">Loading tracks...</div>}
 
       {error && (
-        <div className="text-red-500 bg-red-50 p-4 rounded-lg text-center">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-center text-rose-700">
           Error fetching songs.
         </div>
       )}
-      
+
       {currentSongs && currentSongs.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-xl">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {currentSongs.map((song) => (
-            <div
-              key={song.trackName}
-              className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+            <article
+              key={`${song.trackName}-${song.artistId}`}
+              className="rounded-xl border border-slate-200 bg-white p-4"
             >
               <img
                 src={song?.artworkUrl100}
                 alt={`${song.trackName} artwork`}
-                className="w-full h-auto rounded-md mb-3"
+                className="mb-3 w-full rounded-md"
               />
-              <h2 className="text-lg font-semibold mb-2 line-clamp-2">
-                {song.trackName}
-              </h2>
+              <h3 className="line-clamp-2 text-base font-semibold text-slate-900">{song.trackName}</h3>
+              <p className="mb-3 text-sm text-slate-600">{song.artistName}</p>
               <audio controls src={song?.previewUrl} className="w-full" />
-            </div>
+            </article>
           ))}
         </div>
       )}
 
       {currentSongs && currentSongs.length === 0 && (
-        <div className="text-center text-gray-500 py-8">No songs found.</div>
+        <div className="py-8 text-center text-slate-500">No songs found.</div>
       )}
     </>
   );

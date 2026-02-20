@@ -15,3 +15,14 @@ export type Message = {
   senderName: string;
   timestamp: number;
 };
+
+export type ScoreBoard = Record<string, number>;
+
+export type GameRound = {
+  round: number;
+  previewUrl: string;
+  artistName: string;
+  primaryGenreName: string;
+  releaseDate: string;
+  scores: ScoreBoard;
+};

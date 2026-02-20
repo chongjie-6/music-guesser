@@ -1,4 +1,5 @@
 import { socket } from "../../socket";
+
 export default function ChatMessageInput({
   roomId,
 }: {
@@ -18,16 +19,13 @@ export default function ChatMessageInput({
   };
 
   return (
-    <form className="inline-flex" onSubmit={onSubmit}>
+    <form className="flex gap-2" onSubmit={onSubmit}>
       <input
         name="message"
-        placeholder="Type your message..."
-        className="w-full p-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Type a message"
+        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-400 placeholder:text-slate-400 focus:ring-2"
       />
-      <button
-        type="submit"
-        className="ml-2 bg-blue-500 text-white px-4 py-1 rounded-lg hover:bg-blue-600"
-      >
+      <button type="submit" className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
         Send
       </button>
     </form>

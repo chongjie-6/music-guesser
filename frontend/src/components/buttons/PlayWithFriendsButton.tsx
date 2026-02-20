@@ -4,10 +4,10 @@ export default function PlayWithFriendsButton() {
   const navigate = useNavigate();
   return (
     <button
-      className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+      className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-900 hover:bg-slate-50"
       onClick={() => navigate("/play-with-friends")}
     >
-      Play With Friends
+      Play with friends
     </button>
   );
 }
