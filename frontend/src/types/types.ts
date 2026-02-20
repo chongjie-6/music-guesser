@@ -1,12 +1,20 @@
-export type Song = {
-  artistId: number;
+export type AlbumSong = {
+  trackId: number;
+  trackName: string;
+  previewUrl?: string;
+  trackNumber?: number;
+  trackTimeMillis?: number;
+};
+
+export type Album = {
+  collectionId: number;
+  collectionName: string;
   artistName: string;
   artworkUrl100: string;
-  collectionViewUrl: string;
-  previewUrl: string;
-  primaryGenreName: string;
   releaseDate: string;
-  trackName: string;
+  primaryGenreName: string;
+  trackCount: number;
+  songs: AlbumSong[];
 };
 
 export type Message = {
