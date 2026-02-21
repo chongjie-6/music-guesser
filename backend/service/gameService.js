@@ -1,15 +1,21 @@
-const { createClient } = require("./spotifyService");
-
-const MAX_LIMIT = 10;
-const MAX_OFFSET = 2;
+const { getRandomSong } = require("./spotifyService");
 const songsByRoom = new Map();
 
 const QUERIES = [
+  // Pop
   "genre:pop year:2010-2020",
-  // "genre:pop year:2010-2020",
-  // "genre:pop year:2000-2010",
-  // "genre:dance-pop year:2010-2020",
-  // "genre:indie-pop year:2010-2020",
+  "genre:dance-pop year:2010-2020",
+  "genre:indie-pop year:2010-2020",
+  "genre:hip-hop year:2010-2020",
+  "genre:r-n-b year:2010-2020",
+  "genre:trap year:2015-2020",
+  // Rock & Alternative
+  "genre:rock year:2010-2020",
+  "genre:indie year:2010-2020",
+  "genre:alternative year:2010-2020",
+  // Soul & funk
+  "genre:soul year:2010-2020",
+  "genre:funk year:2010-2020",
 ];
 
 const normalizeText = (value = "") =>
@@ -21,12 +27,6 @@ const normalizeText = (value = "") =>
     .trim()
     .replace(/[^a-z0-9]/g, "");
 
-const getRandomQuery = () => {
-  return encodeURIComponent(
-    QUERIES[Math.floor(Math.random() * QUERIES.length)],
-  );
-};
-
 const buildPublicRound = (song, round) => ({
   round,
   previewUrl: song.previewUrl,
@@ -35,51 +35,15 @@ const buildPublicRound = (song, round) => ({
   releaseDate: song.releaseDate,
 });
 
-const getRandomSong = async () => {
-  const query = getRandomQuery();
-  const token = await createClient();
-
-  const random_offset = Math.floor(Math.random() * MAX_OFFSET);
-  const response = await fetch(
-    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=${MAX_LIMIT}&offset=${random_offset}&market=US`,
-    { headers: { Authorization: `Bearer ${token}` } },
+const getRandomQuery = () => {
+  return encodeURIComponent(
+    QUERIES[Math.floor(Math.random() * QUERIES.length)],
   );
-
-  const tracksJSON = await response.json();
-  const tracks = tracksJSON.tracks.items;
-
-  if (!tracks.length) throw new Error("No tracks found on selected page");
-
-  const picked = tracks[Math.floor(Math.random() * tracks.length)];
-
-  const song_name = picked?.name ?? "";
-  const artist = (picked?.artists ?? []).map((a) => a.name).join(" ") || "";
-
-  if (!song_name) throw new Error("Picked track missing name");
-
-  const itunesTerm = encodeURIComponent(`${song_name} ${artist}`.trim());
-  const song_response = await fetch(
-    `https://itunes.apple.com/search?term=${itunesTerm}&entity=song&limit=20&country=US`,
-  );
-
-  if (!song_response.ok) {
-    const text = await song_response.text();
-    throw new Error(`iTunes search failed (${song_response.status}): ${text}`);
-  }
-
-  const song_data = await song_response.json();
-  const results = song_data?.results ?? [];
-
-  if (!results.length) {
-    throw new Error("Could not find iTunes matches for this track");
-  }
-  const best = results.find((r) => r.previewUrl) ?? results[0];
-
-  return best;
 };
 
 const startRoomGame = async (roomId) => {
-  const song = await getRandomSong();
+  const query = getRandomQuery();
+  const song = await getRandomSong(query);
 
   const initialState = {
     isActive: true,
@@ -132,4 +96,5 @@ module.exports = {
   getRoomGame,
   startRoomGame,
   submitGuess,
+  getRandomQuery,
 };
