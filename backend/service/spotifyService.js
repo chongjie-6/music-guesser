@@ -1,3 +1,5 @@
+const supabase = require("../config/db");
+
 require("dotenv").config();
 const MAX_LIMIT = 10;
 const MAX_OFFSET = 2;
@@ -41,34 +43,20 @@ const getSongFromSpotifyWithQuery = async (query) => {
   return tracks;
 };
 
-const getRandomSong = async (query, counter) => {
-  const tracks = await getSongFromSpotifyWithQuery(query);
-  const picked = tracks[Math.floor(Math.random() * tracks.length)];
+const getRandomSong = async () => {
+  const supabaseClient = supabase;
 
-  const song_name = picked?.name ?? "";
-  const artist = (picked?.artists ?? []).map((a) => a.name).join(" ") || "";
+  const { data: song_response, error } =
+    await supabaseClient.rpc("get_random_song");
 
-  if (!song_name) throw new Error("Picked track missing name");
-
-  const itunesTerm = encodeURIComponent(`${song_name} ${artist}`.trim());
-  const song_response = await fetch(
-    `https://itunes.apple.com/search?term=${itunesTerm}&entity=song&limit=20&country=US`,
-  );
-
-  if (!song_response.ok) {
-    const text = await song_response.text();
-    throw new Error(`iTunes search failed (${song_response.status}): ${text}`);
+  if (!song_response || song_response.length <= 0 || error) {
+    throw new Error(`Failed to get random song ${error}`);
   }
 
-  const song_data = await song_response.json();
-  const results = song_data?.results ?? [];
+  const song_data = await song_response;
 
-  if (!results.length) {
-    throw new Error("Could not find iTunes matches for this track");
-  }
-  const best = results.find((r) => r.previewUrl) ?? results[0];
-
-  return best;
+  console.log(song_data[0]);
+  return song_data[0];
 };
 
 module.exports = { createClient, getSongFromSpotifyWithQuery, getRandomSong };

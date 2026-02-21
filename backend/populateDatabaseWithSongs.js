@@ -1,9 +1,7 @@
 const { setTimeout } = require("node:timers/promises");
 const supabase = require("./config/db");
 
-const songList = require("./data/data").anotherTopSongsList.concat(
-  require("./data/data").topSongs,
-);
+const songList = require("./data/data").anotherListOfTopSongs;
 
 const getSong = async (song) => {
   const itunesTerm = encodeURIComponent(`${song}`.trim());

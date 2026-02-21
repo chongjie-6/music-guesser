@@ -29,10 +29,10 @@ const normalizeText = (value = "") =>
 
 const buildPublicRound = (song, round) => ({
   round,
-  previewUrl: song.previewUrl,
-  artistName: song.artistName,
-  primaryGenreName: song.primaryGenreName,
-  releaseDate: song.releaseDate,
+  previewUrl: song.song_preview_url,
+  artistName: song.artist_name,
+  primaryGenreName: song.genre_name,
+  releaseDate: song.released_on,
 });
 
 const getRandomQuery = () => {
