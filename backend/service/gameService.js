@@ -49,7 +49,7 @@ const startRoomGame = async (roomId) => {
     isActive: true,
     round: 1,
     song,
-    normalizedAnswer: normalizeText(song.trackName),
+    normalizedAnswer: normalizeText(song.song_name),
     scores: {},
   };
 
@@ -74,12 +74,12 @@ const submitGuess = async ({ roomId, userId, userName, guess }) => {
   const scorerName = userName || userId;
   game.scores[scorerName] = (game.scores[scorerName] || 0) + 1;
 
-  const correctTrackName = game.song.trackName;
+  const correctTrackName = game.song.song_name;
 
   const nextSong = await getRandomSong();
   game.song = nextSong;
   game.round += 1;
-  game.normalizedAnswer = normalizeText(nextSong.trackName);
+  game.normalizedAnswer = normalizeText(nextSong.song_name);
 
   return {
     status: "correct",
