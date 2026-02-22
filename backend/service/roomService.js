@@ -1,4 +1,3 @@
-const io = require("../server").io;
 
 /**
  * Helper function to check if a room with the given ID exists
