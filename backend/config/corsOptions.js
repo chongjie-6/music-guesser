@@ -1,6 +1,6 @@
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://music-guesser-pi.vercel.app/",
+  "https://music-guesser-pi.vercel.app",
 ];
 
 const corsOptions = {
