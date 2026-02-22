@@ -80,6 +80,7 @@ const submitGuess = async ({ roomId, userId, userName, guess }) => {
   game.song = nextSong;
   game.round += 1;
   game.normalizedAnswer = normalizeText(nextSong.song_name);
+  console.log(normalizeText(nextSong.song_name));
 
   return {
     status: "correct",
