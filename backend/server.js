@@ -9,8 +9,6 @@ const { createServer } = require("http");
 const path = require("path");
 const { fileURLToPath } = require("url");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Routes
 const songRoutes = require("./routes/songRoutes");
@@ -35,7 +33,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
   app.get("*", (req, res) => {
-    return res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
   });
 }
 module.exports = server;
