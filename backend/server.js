@@ -26,6 +26,4 @@ const io = new Server(server, {
 const socketHandler = require("./sockets/index");
 socketHandler(io);
 
-server.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+module.exports = server;
