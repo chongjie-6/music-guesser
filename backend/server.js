@@ -7,8 +7,6 @@ const { Server } = require("socket.io");
 app.use(cors(corsOptions));
 const { createServer } = require("http");
 const path = require("path");
-const { fileURLToPath } = require("url");
-
 
 // Routes
 const songRoutes = require("./routes/songRoutes");
@@ -32,7 +30,7 @@ socketHandler(io);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-  app.get("*", (req, res) => {
+  app.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
   });
 }
