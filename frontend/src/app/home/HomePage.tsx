@@ -1,5 +1,4 @@
 import PlayWithFriendsButton from "../../components/buttons/PlayWithFriendsButton";
-import SongSearchForm from "../../components/SongSearchForm";
 
 export default function HomePage() {
   return (
@@ -13,10 +12,6 @@ export default function HomePage() {
         <div className="mt-6">
           <PlayWithFriendsButton />
         </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-6">
-        <SongSearchForm />
       </section>
     </main>
   );
