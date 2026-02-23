@@ -1,6 +1,7 @@
 const allowedOrigins = [
   "http://localhost:5173",
   "https://music-guesser-pi.vercel.app",
+  "https://music-guesser-production.up.railway.app",
 ];
 
 const corsOptions = {
@@ -15,4 +16,5 @@ const corsOptions = {
   },
   credentials: true, // Allow cookies and authorization headers
 };
-module.exports = corsOptions;
+
+module.exports = { corsOptions, allowedOrigins };

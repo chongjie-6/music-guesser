@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3500;
 const cors = require("cors");
-const corsOptions = require("./config/corsOptions");
+const { allowedOrigins, corsOptions } = require('./config/corsOptions');
 const { Server } = require("socket.io");
 app.use(cors(corsOptions));
 const { createServer } = require("http");
@@ -20,7 +20,7 @@ app.use(limiter);
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins
   },
 });
 
