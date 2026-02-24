@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { type Socket } from "socket.io-client";
 
 export const LeaveRoomButton = ({
@@ -7,8 +8,10 @@ export const LeaveRoomButton = ({
   socket: Socket;
   roomID: string;
 }) => {
+  const navigate = useNavigate();
   const onLeaveRoom = async () => {
     socket.emit("leave-room", roomID);
+    navigate("/play-with-friends");
   };
 
   return (

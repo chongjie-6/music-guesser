@@ -17,6 +17,8 @@ export default function RoomPage() {
   const [round, setRound] = useState<GameRound | null>(null);
   const [scores, setScores] = useState<ScoreBoard>({});
   const [lastWinnerMessage, setLastWinnerMessage] = useState<string>("");
+  // const [isGameEnd, setIsGameEnd] = useState<boolean>(false);
+  // const [winner, setWinner] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (roomId) {
@@ -43,10 +45,23 @@ export default function RoomPage() {
       },
     );
 
+    socket.on("skipped-round", (payload: GameRound) => {
+      setLastWinnerMessage("Nobody guessed that in time...");
+      setRound(payload);
+      setScores(payload.scores || {});
+    });
+
+    // socket.on("game-end", ({ winner }: { winner: string }) => {
+    //   setIsGameEnd(true);
+    //   setWinner(winner);
+    // });
+
     return () => {
       socket.off("game-started");
       socket.off("game-next-round");
       socket.off("game-correct-guess");
+      socket.off("game-end");
+      socket.off("skipped-round");
     };
   }, []);
 
