@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ChatMessages from "../../../components/chatComponents/ChatMessagesList";
-import type { GameEnd, GameRound, Message, ScoreBoard } from "../../../types/types";
+import type {
+  GameEnd,
+  GameRound,
+  Message,
+  ScoreBoard,
+} from "../../../types/types";
 import { useNewMessageSocket } from "../../../hooks/useNewMessageSocket";
 import { socket } from "../../../socket";
-import { useErrorSocket } from "../../../hooks/useErrorSocket";
 import { StartGameButton } from "../../../components/buttons/StartGameButton";
 import { LeaveRoomButton } from "../../../components/buttons/LeaveRoomButton";
 import GameOverScreen from "../../../components/GameOverScreen";
+import RoomNotFoundModal from "../../../components/RoomNotFound";
 
 export default function RoomPage() {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [error, setError] = useState<string>("");
+  const [roomNotFound, setRoomNotFound] = useState(false);
   const [round, setRound] = useState<GameRound | null>(null);
   const [scores, setScores] = useState<ScoreBoard>({});
   const [lastWinnerMessage, setLastWinnerMessage] = useState<string>("");
@@ -21,11 +27,21 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (roomId) {
+      setRoomNotFound(false);
+      setError("");
       socket.emit("join-room", roomId);
     }
   }, [roomId]);
 
   useEffect(() => {
+    socket.on("error", (message: string) => {
+      if (message === "Room does not exist") {
+        setRoomNotFound(true);
+      } else {
+        setError(message);
+      }
+    });
+
     socket.on("game-started", (payload: GameRound) => {
       setRound(payload);
       setScores(payload.scores || {});
@@ -63,6 +79,7 @@ export default function RoomPage() {
     });
 
     return () => {
+      socket.off("error");
       socket.off("game-started");
       socket.off("game-next-round");
       socket.off("game-correct-guess");
@@ -72,7 +89,6 @@ export default function RoomPage() {
   }, []);
 
   useNewMessageSocket(setMessages);
-  useErrorSocket(setError);
 
   const handlePlayAgain = () => {
     setGameEnd(null);
@@ -83,6 +99,10 @@ export default function RoomPage() {
 
   return (
     <>
+      {roomNotFound && (
+        <RoomNotFoundModal onGoBack={() => navigate("/play-with-friends")} />
+      )}
+
       {gameEnd && (
         <GameOverScreen result={gameEnd} onPlayAgain={handlePlayAgain} />
       )}
@@ -115,12 +135,10 @@ export default function RoomPage() {
                 <h2 className="font-semibold">Round {round.round}</h2>
                 <span className="text-xs text-slate-400">of 10</span>
               </div>
-              <p className="text-sm text-slate-600">Artist: {round.artistName}</p>
               <p className="text-sm text-slate-600">
-                Genre: {round.primaryGenreName}
-              </p>
-              <p className="text-sm text-slate-600">
-                Release: {new Date(round.releaseDate).getFullYear()}
+                Artist: {round.artistName} <br></br>
+                Genre: {round.primaryGenreName} <br></br>
+                Released: {new Date(round.releaseDate).getFullYear()}
               </p>
               <audio
                 controls
@@ -132,24 +150,29 @@ export default function RoomPage() {
           )}
 
           {lastWinnerMessage && (
-            <p className="mt-4 text-sm text-emerald-700">{lastWinnerMessage}</p>
+            <p className="mt-3 text-sm text-slate-600">{lastWinnerMessage}</p>
           )}
 
-          <section className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <h3 className="font-medium">Scoreboard</h3>
-            {Object.keys(scores).length === 0 && (
-              <p className="text-sm text-slate-500">No scores yet</p>
-            )}
-            <div className="mt-2 space-y-1">
-              {Object.entries(scores)
-                .sort(([, a], [, b]) => b - a)
-                .map(([name, score]) => (
-                  <p key={name} className="text-sm text-slate-700">
-                    {name}: <span className="font-semibold">{score}</span>
-                  </p>
-                ))}
-            </div>
-          </section>
+          {Object.keys(scores).length > 0 && (
+            <section className="mt-4">
+              <h3 className="mb-2 text-sm font-semibold text-slate-700">
+                Scores
+              </h3>
+              <ul className="space-y-1">
+                {Object.entries(scores)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([player, score]) => (
+                    <li
+                      key={player}
+                      className="flex justify-between text-sm text-slate-600"
+                    >
+                      <span>{player}</span>
+                      <span className="font-medium">{score}</span>
+                    </li>
+                  ))}
+              </ul>
+            </section>
+          )}
         </aside>
       </main>
     </>
