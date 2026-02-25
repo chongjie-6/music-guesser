@@ -6,7 +6,6 @@ import { useNewMessageSocket } from "../../../hooks/useNewMessageSocket";
 import { socket } from "../../../socket";
 import { useErrorSocket } from "../../../hooks/useErrorSocket";
 import { StartGameButton } from "../../../components/buttons/StartGameButton";
-import UserNameForm from "../../../components/UserNameForm";
 import { LeaveRoomButton } from "../../../components/buttons/LeaveRoomButton";
 import GameOverScreen from "../../../components/GameOverScreen";
 
@@ -109,8 +108,6 @@ export default function RoomPage() {
               Back
             </button>
           </div>
-
-          <UserNameForm />
 
           {round && (
             <section className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
