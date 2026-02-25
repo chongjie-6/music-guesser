@@ -1,23 +1,6 @@
 const { getRandomSong } = require("./spotifyService");
 const songsByRoom = new Map();
 
-const QUERIES = [
-  // Pop
-  "genre:pop year:2010-2020",
-  "genre:dance-pop year:2010-2020",
-  "genre:indie-pop year:2010-2020",
-  "genre:hip-hop year:2010-2020",
-  "genre:r-n-b year:2010-2020",
-  "genre:trap year:2015-2020",
-  // Rock & Alternative
-  "genre:rock year:2010-2020",
-  "genre:indie year:2010-2020",
-  "genre:alternative year:2010-2020",
-  // Soul & funk
-  "genre:soul year:2010-2020",
-  "genre:funk year:2010-2020",
-];
-
 const normalizeText = (value = "") =>
   String(value)
     .toLowerCase()
@@ -35,15 +18,8 @@ const buildPublicRound = (song, round) => ({
   releaseDate: song.released_on,
 });
 
-const getRandomQuery = () => {
-  return encodeURIComponent(
-    QUERIES[Math.floor(Math.random() * QUERIES.length)],
-  );
-};
-
 const startRoomGame = async (roomId) => {
-  const query = getRandomQuery();
-  const song = await getRandomSong(query);
+  const song = await getRandomSong();
 
   const initialState = {
     isActive: true,
@@ -93,9 +69,34 @@ const submitGuess = async ({ roomId, userId, userName, guess }) => {
   };
 };
 
+/**
+ * Skips the current round without awarding any points.
+ * Returns the skipped song's name and the next round data.
+ */
+const skipRound = async (roomId) => {
+  const game = songsByRoom.get(roomId);
+  if (!game?.isActive) return null;
+
+  const skippedSongName = game.song.song_name;
+
+  const nextSong = await getRandomSong();
+  game.song = nextSong;
+  game.round += 1;
+  game.normalizedAnswer = normalizeText(nextSong.song_name);
+  console.log(`Round skipped. Answer was: ${skippedSongName}`);
+
+  return {
+    answer: skippedSongName,
+    nextRound: {
+      ...buildPublicRound(nextSong, game.round),
+      scores: game.scores,
+    },
+  };
+};
+
 module.exports = {
   getRoomGame,
   startRoomGame,
   submitGuess,
-  getRandomQuery,
+  skipRound,
 };

@@ -1,4 +1,8 @@
 const { submitGuess, getRoomGame } = require("../../service/gameService");
+const {
+  clearRoomTimer,
+  startRoundTimer,
+} = require("./gameHandler");
 
 module.exports = (io, socket) => {
   /**
@@ -27,12 +31,16 @@ module.exports = (io, socket) => {
         });
 
         if (result.status === "correct") {
+          clearRoomTimer(roomId);
+
           io.in(roomId).emit("game-correct-guess", {
             winner: result.winner,
             answer: result.answer,
             scores: result.nextRound.scores,
           });
           io.in(roomId).emit("game-next-round", result.nextRound);
+
+          startRoundTimer(io, roomId);
         }
       } catch (error) {
         console.log("guess submission error", error);
