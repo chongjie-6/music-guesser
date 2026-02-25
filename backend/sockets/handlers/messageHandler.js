@@ -1,8 +1,5 @@
 const { submitGuess, getRoomGame } = require("../../service/gameService");
-const {
-  clearRoomTimer,
-  startRoundTimer,
-} = require("./gameHandler");
+const { clearRoomTimer, startRoundTimer } = require("./gameHandler");
 
 module.exports = (io, socket) => {
   /**
@@ -31,16 +28,23 @@ module.exports = (io, socket) => {
         });
 
         if (result.status === "correct") {
+          // Stop the skip timer — someone guessed in time
           clearRoomTimer(roomId);
 
           io.in(roomId).emit("game-correct-guess", {
             winner: result.winner,
             answer: result.answer,
-            scores: result.nextRound.scores,
+            scores: result.gameOver ? result.result.scores : result.nextRound.scores,
           });
-          io.in(roomId).emit("game-next-round", result.nextRound);
 
-          startRoundTimer(io, roomId);
+          if (result.gameOver) {
+            io.in(roomId).emit("game-end", result.result);
+            console.log(`Game over in room ${roomId}. Winner: ${result.result.winner}`);
+          } else {
+            io.in(roomId).emit("game-next-round", result.nextRound);
+            // Start fresh timer for next round
+            startRoundTimer(io, roomId);
+          }
         }
       } catch (error) {
         console.log("guess submission error", error);

@@ -5,6 +5,7 @@ const {
   skipRound,
 } = require("../../service/gameService");
 
+// Track active timers per room so they can be cleared on correct guess
 const roomTimers = new Map();
 
 const ROUND_TIMEOUT_MS = 5000;
@@ -22,7 +23,8 @@ const clearRoomTimer = (roomId) => {
 
 /**
  * Starts a 5-second timer for a room. If nobody guesses in time,
- * skips the round without awarding any points and emits "skipped-round".
+ * skips the round without awarding any points and emits "skipped-round"
+ * or "game-end" if the game is over.
  */
 const startRoundTimer = (io, roomId) => {
   clearRoomTimer(roomId);
@@ -32,6 +34,14 @@ const startRoundTimer = (io, roomId) => {
       const result = await skipRound(roomId);
       if (!result) return;
 
+      if (result.gameOver) {
+        clearRoomTimer(roomId);
+        io.in(roomId).emit("skipped-round", { answer: result.answer, scores: result.result.scores });
+        io.in(roomId).emit("game-end", result.result);
+        console.log(`Game over in room ${roomId} after skip. Winner: ${result.result.winner}`);
+        return;
+      }
+
       io.in(roomId).emit("skipped-round", {
         ...result.nextRound,
         answer: result.answer,
@@ -39,6 +49,7 @@ const startRoundTimer = (io, roomId) => {
 
       console.log(`Round skipped in room ${roomId}. Answer was: ${result.answer}`);
 
+      // Start timer for next round
       startRoundTimer(io, roomId);
     } catch (error) {
       console.log("skip-round error", error);
@@ -74,18 +85,13 @@ module.exports = (io, socket) => {
       io.in(roomID).emit("message", "Game started! Guess the song title.");
       console.log(`Game started by: ${socket.id}`);
 
+      // Start the skip timer for the first round
       startRoundTimer(io, roomID);
     } catch (error) {
       console.log("start-game error", error);
       socket.emit("error", "Unable to start game right now");
     }
   });
-
-  /**
-   * Expose helpers so messageHandler can clear/restart the timer on correct guess.
-   */
-  socket.clearRoomTimer = clearRoomTimer;
-  socket.startRoundTimer = startRoundTimer;
 };
 
 module.exports.clearRoomTimer = clearRoomTimer;

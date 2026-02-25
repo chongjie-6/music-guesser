@@ -1,5 +1,6 @@
 const { getRandomSong } = require("./spotifyService");
 const songsByRoom = new Map();
+const MAX_ROUNDS = 5;
 
 const normalizeText = (value = "") =>
   String(value)
@@ -17,6 +18,26 @@ const buildPublicRound = (song, round) => ({
   primaryGenreName: song.genre_name,
   releaseDate: song.released_on,
 });
+
+/**
+ * Determines the winner from the scores object.
+ */
+const computeGameResult = (scores) => {
+  const entries = Object.entries(scores);
+  if (entries.length === 0) return { winner: null, scores, isTie: true, topScore: 0 };
+
+  const sorted = entries.sort(([, a], [, b]) => b - a);
+  const topScore = sorted[0][1];
+  const topPlayers = sorted.filter(([, s]) => s === topScore);
+  const isTie = topPlayers.length > 1;
+
+  return {
+    winner: isTie ? null : sorted[0][0],
+    scores,
+    isTie,
+    topScore,
+  };
+};
 
 const startRoomGame = async (roomId) => {
   const song = await getRandomSong();
@@ -52,16 +73,28 @@ const submitGuess = async ({ roomId, userId, userName, guess }) => {
 
   const correctTrackName = game.song.song_name;
 
+  // Check if this was the last round
+  if (game.round >= MAX_ROUNDS) {
+    game.isActive = false;
+    return {
+      status: "correct",
+      winner: scorerName,
+      answer: correctTrackName,
+      gameOver: true,
+      result: computeGameResult(game.scores),
+    };
+  }
+
   const nextSong = await getRandomSong();
   game.song = nextSong;
   game.round += 1;
   game.normalizedAnswer = normalizeText(nextSong.song_name);
-  console.log(normalizeText(nextSong.song_name));
 
   return {
     status: "correct",
     winner: scorerName,
     answer: correctTrackName,
+    gameOver: false,
     nextRound: {
       ...buildPublicRound(nextSong, game.round),
       scores: game.scores,
@@ -71,13 +104,22 @@ const submitGuess = async ({ roomId, userId, userName, guess }) => {
 
 /**
  * Skips the current round without awarding any points.
- * Returns the skipped song's name and the next round data.
  */
 const skipRound = async (roomId) => {
   const game = songsByRoom.get(roomId);
   if (!game?.isActive) return null;
 
   const skippedSongName = game.song.song_name;
+
+  // Check if this was the last round
+  if (game.round >= MAX_ROUNDS) {
+    game.isActive = false;
+    return {
+      answer: skippedSongName,
+      gameOver: true,
+      result: computeGameResult(game.scores),
+    };
+  }
 
   const nextSong = await getRandomSong();
   game.song = nextSong;
@@ -87,6 +129,7 @@ const skipRound = async (roomId) => {
 
   return {
     answer: skippedSongName,
+    gameOver: false,
     nextRound: {
       ...buildPublicRound(nextSong, game.round),
       scores: game.scores,

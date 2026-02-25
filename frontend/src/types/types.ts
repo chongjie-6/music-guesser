@@ -34,3 +34,10 @@ export type GameRound = {
   releaseDate: string;
   scores: ScoreBoard;
 };
+
+export type GameEnd = {
+  winner: string | null;
+  scores: ScoreBoard;
+  isTie: boolean;
+  topScore: number;
+};
