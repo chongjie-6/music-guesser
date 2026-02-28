@@ -9,7 +9,11 @@ export default function SongSearchBar() {
   const [queryInput, setQueryInput] = useState("");
   const debouncedQuery = useDebouncedCallback(() => setQuery(queryInput), 300);
 
-  const { data: albums, error, isLoading } = useQuery<Album[]>({
+  const {
+    data: albums,
+    error,
+    isLoading,
+  } = useQuery<Album[]>({
     queryKey: ["albums", query],
     queryFn: () => apiGet(`/albums`, { query, limit: "4", songsPerAlbum: "5" }),
     enabled: query.length > 0,
@@ -18,7 +22,9 @@ export default function SongSearchBar() {
   return (
     <>
       <div className="mb-8">
-        <h2 className="font-display text-sm glow-cyan uppercase mb-4">▶ ALBUM SEARCH</h2>
+        <h2 className="font-display text-sm glow-cyan uppercase mb-4">
+          ▶ ALBUM SEARCH
+        </h2>
         <div className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row">
           <input
             type="text"
@@ -28,19 +34,23 @@ export default function SongSearchBar() {
             onKeyDown={(e) => e.key === "Enter" && debouncedQuery()}
             className="flex-1 border-2 border-cyan-400/50 bg-cab-black px-4 py-3 text-cyan-200 tracking-wider placeholder:text-cyan-900/50"
           />
-          <button type="button" onClick={() => debouncedQuery()} className="btn btn-cyan py-3 px-6">
+          <button
+            type="button"
+            onClick={() => debouncedQuery()}
+            className="btn btn-cyan py-3 px-6"
+          >
             SEARCH
           </button>
         </div>
       </div>
 
       {isLoading && (
-        <div className="py-8 text-center font-display text-[9px] glow-cyan blink tracking-widest uppercase">
+        <div className="py-8 text-center font-display text-sm glow-cyan blink tracking-widest uppercase">
           ◈ LOADING...
         </div>
       )}
       {error && (
-        <div className="pixel-box-red p-4 text-center font-display text-[9px] glow-red uppercase tracking-wider">
+        <div className="pixel-box-red p-4 text-center font-display text-sm glow-red uppercase tracking-wider">
           ⚠ ERROR FETCHING ALBUMS
         </div>
       )}
@@ -48,7 +58,10 @@ export default function SongSearchBar() {
       {albums && albums.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-2">
           {albums.map((album) => (
-            <article key={album.collectionId} className="pixel-box-cyan p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5">
+            <article
+              key={album.collectionId}
+              className="pixel-box-cyan p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
+            >
               <div className="mb-3 flex gap-4">
                 <img
                   src={album.artworkUrl100}
@@ -57,22 +70,41 @@ export default function SongSearchBar() {
                   style={{ boxShadow: "3px 3px 0 rgba(0,245,255,.4)" }}
                 />
                 <div>
-                  <h3 className="font-display text-[9px] glow-yellow uppercase leading-snug mb-1">{album.collectionName}</h3>
-                  <p className="font-body text-lg glow-magenta">{album.artistName}</p>
-                  <p className="font-display text-[8px] text-cyan-500/60 mt-1 uppercase tracking-wide">
-                    {album.primaryGenreName} · {new Date(album.releaseDate).getFullYear()} · {album.trackCount} TRK
+                  <h3 className="font-display text-sm glow-yellow uppercase leading-snug mb-1">
+                    {album.collectionName}
+                  </h3>
+                  <p className="font-body text-lg glow-magenta">
+                    {album.artistName}
+                  </p>
+                  <p className="font-display text-sm text-cyan-500/60 mt-1 uppercase tracking-wide">
+                    {album.primaryGenreName} ·{" "}
+                    {new Date(album.releaseDate).getFullYear()} ·{" "}
+                    {album.trackCount} TRK
                   </p>
                 </div>
               </div>
               <div className="pixel-rule-cyan mb-3" />
               <div className="space-y-2">
                 {album.songs.map((song) => (
-                  <div key={song.trackId} className="border border-yellow-400/10 bg-cab-black/60 p-2">
-                    <p className="font-display text-[8px] text-yellow-200/80 mb-1">
-                      {song.trackNumber && <span className="glow-yellow mr-1">{song.trackNumber}.</span>}
+                  <div
+                    key={song.trackId}
+                    className="border border-yellow-400/10 bg-cab-black/60 p-2"
+                  >
+                    <p className="font-display text-sm text-yellow-200/80 mb-1">
+                      {song.trackNumber && (
+                        <span className="glow-yellow mr-1">
+                          {song.trackNumber}.
+                        </span>
+                      )}
                       {song.trackName?.toUpperCase()}
                     </p>
-                    {song.previewUrl && <audio controls src={song.previewUrl} className="w-full" />}
+                    {song.previewUrl && (
+                      <audio
+                        controls
+                        src={song.previewUrl}
+                        className="w-full"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -82,7 +114,7 @@ export default function SongSearchBar() {
       )}
 
       {albums && albums.length === 0 && (
-        <div className="py-10 text-center font-display text-[9px] text-yellow-600/40 uppercase tracking-widest blink">
+        <div className="py-10 text-center font-display text-sm text-yellow-600/40 uppercase tracking-widest blink">
           NO RESULTS FOUND
         </div>
       )}

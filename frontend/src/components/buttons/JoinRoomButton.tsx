@@ -2,7 +2,13 @@ import { useNavigate } from "react-router-dom";
 import type { Socket } from "socket.io-client";
 import { setUserNameSocket } from "../../hooks/useSetUserNameSocket";
 
-export const JoinRoomButton = ({ socket, roomID }: { socket: Socket; roomID: string }) => {
+export const JoinRoomButton = ({
+  socket,
+  roomID,
+}: {
+  socket: Socket;
+  roomID: string;
+}) => {
   const navigate = useNavigate();
   const onJoinRoom = async () => {
     if (!roomID.trim()) return;
@@ -11,7 +17,7 @@ export const JoinRoomButton = ({ socket, roomID }: { socket: Socket; roomID: str
     navigate(`/play-with-friends/room/${roomID}`);
   };
   return (
-    <button onClick={onJoinRoom} className="btn btn-yellow text-[8px]">
+    <button onClick={onJoinRoom} className="btn btn-yellow text-sm">
       ▶ JOIN ROOM
     </button>
   );

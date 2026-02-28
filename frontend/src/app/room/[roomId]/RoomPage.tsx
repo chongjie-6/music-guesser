@@ -26,6 +26,10 @@ export default function RoomPage() {
   const [gameEnd, setGameEnd] = useState<GameEnd | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  const copyToClipboard = (roomId: string | undefined) => {
+    if (roomId) navigator.clipboard.writeText(roomId);
+  };
+
   useEffect(() => {
     if (roomId) {
       setRoomNotFound(false);
@@ -113,7 +117,7 @@ export default function RoomPage() {
           {/* Chat panel */}
           <div>
             {error && (
-              <div className="pixel-box-red p-3 mb-3 font-display text-[9px] glow-red">
+              <div className="pixel-box-red p-3 mb-3 font-display text-sm glow-red">
                 ⚠ {error}
               </div>
             )}
@@ -124,12 +128,18 @@ export default function RoomPage() {
           <aside className="flex flex-col gap-3">
             {/* Room ID */}
             <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
-              <p className="font-display text-[8px] text-yellow-600/60 uppercase tracking-widest mb-1">
+              <p className="font-display text-sm text-yellow-600/60 uppercase tracking-widest mb-1">
                 ROOM CODE
               </p>
-              <p className="font-display text-[9px] glow-yellow truncate">
-                {roomId}
-              </p>
+              <div>
+                <p className="font-display text-sm glow-yellow">{roomId}</p>
+                <button
+                  onClick={() => copyToClipboard(roomId)}
+                  className="btn btn-cyan text-xs"
+                >
+                  Copy
+                </button>
+              </div>
             </div>
 
             {/* Controls */}
@@ -138,7 +148,7 @@ export default function RoomPage() {
               {roomId && <LeaveRoomButton socket={socket} roomID={roomId} />}
               <button
                 onClick={() => navigate("/play-with-friends")}
-                className="btn btn-yellow text-[8px]"
+                className="btn btn-yellow text-sm"
               >
                 ← BACK
               </button>
@@ -148,7 +158,7 @@ export default function RoomPage() {
             {round && (
               <div className="pixel-box-cyan p-4">
                 <div className="pixel-rule-cyan mb-3" />
-                <p className="font-display text-[8px] glow-cyan uppercase tracking-widest mb-3">
+                <p className="font-display text-sm glow-cyan uppercase tracking-widest mb-3">
                   — ROUND {round.round} / 10 —
                 </p>
                 <div className="font-body text-xl space-y-1 text-cyan-200/80">
@@ -182,7 +192,7 @@ export default function RoomPage() {
 
             {/* Winner flash */}
             {lastWinnerMessage && (
-              <div className="pixel-box-magenta p-3 font-display text-[8px] glow-magenta leading-relaxed blink">
+              <div className="pixel-box-magenta p-3 font-display text-sm glow-magenta leading-relaxed blink">
                 ★ {lastWinnerMessage}
               </div>
             )}
@@ -191,7 +201,7 @@ export default function RoomPage() {
             {Object.keys(scores).length > 0 && (
               <div className="pixel-box p-4">
                 <div className="pixel-rule-rainbow mb-3" />
-                <p className="font-display text-[9px] glow-yellow mb-3 tracking-widest">
+                <p className="font-display text-sm glow-yellow mb-3 tracking-widest">
                   HI-SCORE TABLE
                 </p>
                 <ul className="flex flex-col gap-1.5">
@@ -200,7 +210,7 @@ export default function RoomPage() {
                     .map(([player, score], i) => (
                       <li
                         key={player}
-                        className={`flex justify-between items-center px-3 py-2 font-display text-[8px] ${
+                        className={`flex justify-between items-center px-3 py-2 font-display text-sm ${
                           i === 0
                             ? "score-row-top glow-yellow"
                             : i === 1

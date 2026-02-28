@@ -9,7 +9,13 @@ const RANK_CLASSES = [
   "score-row-dim text-yellow-200/30",
 ];
 
-export default function GameOverScreen({ result, onPlayAgain }: { result: GameEnd; onPlayAgain: () => void }) {
+export default function GameOverScreen({
+  result,
+  onPlayAgain,
+}: {
+  result: GameEnd;
+  onPlayAgain: () => void;
+}) {
   const sorted = Object.entries(result.scores).sort(([, a], [, b]) => b - a);
 
   return (
@@ -30,40 +36,57 @@ export default function GameOverScreen({ result, onPlayAgain }: { result: GameEn
         <div className="pixel-box p-8">
           <div className="pixel-rule-rainbow mb-6" />
 
-          <p className="font-display text-[8px] glow-yellow tracking-[.3em] uppercase mb-4">
+          <p className="font-display text-sm glow-yellow tracking-[.3em] uppercase mb-4">
             ◈ GAME OVER ◈
           </p>
 
           {result.isTie ? (
             <>
-              <h2 className="font-display text-2xl glow-cyan uppercase mb-1">IT'S A TIE!</h2>
-              <p className="font-body text-2xl text-yellow-200/60">{result.topScore} PTS EACH</p>
+              <h2 className="font-display text-2xl glow-cyan uppercase mb-1">
+                IT'S A TIE!
+              </h2>
+              <p className="font-body text-2xl text-yellow-200/60">
+                {result.topScore} PTS EACH
+              </p>
             </>
           ) : result.winner ? (
             <>
-              <p className="font-display text-[8px] text-yellow-500/60 tracking-widest mb-2 uppercase">WINNER</p>
+              <p className="font-display text-sm text-yellow-500/60 tracking-widest mb-2 uppercase">
+                WINNER
+              </p>
               <h2 className="font-display text-2xl text-rainbow uppercase leading-snug mb-1">
                 {result.winner.toUpperCase()}
               </h2>
-              <p className="font-body text-2xl glow-yellow">{result.topScore} PTS</p>
+              <p className="font-body text-2xl glow-yellow">
+                {result.topScore} PTS
+              </p>
             </>
           ) : (
-            <h2 className="font-display text-xl text-yellow-600/60 uppercase">NO WINNER</h2>
+            <h2 className="font-display text-xl text-yellow-600/60 uppercase">
+              NO WINNER
+            </h2>
           )}
 
           {sorted.length > 0 && (
             <div className="mt-6 flex flex-col gap-1.5">
               {sorted.map(([name, score], i) => (
-                <div key={name}
-                  className={`flex items-center justify-between px-4 py-2.5 font-display text-[8px] ${RANK_CLASSES[i] ?? RANK_CLASSES[3]}`}>
-                  <span>{RANK_LABELS[i] ?? `${i+1}.`} {name.toUpperCase()}</span>
+                <div
+                  key={name}
+                  className={`flex items-center justify-between px-4 py-2.5 font-display text-sm ${RANK_CLASSES[i] ?? RANK_CLASSES[3]}`}
+                >
+                  <span>
+                    {RANK_LABELS[i] ?? `${i + 1}.`} {name.toUpperCase()}
+                  </span>
                   <span>{score} PTS</span>
                 </div>
               ))}
             </div>
           )}
 
-          <button onClick={onPlayAgain} className="btn btn-yellow-fill w-full mt-6 py-3 text-[9px] tracking-widest">
+          <button
+            onClick={onPlayAgain}
+            className="btn btn-yellow-fill w-full mt-6 py-3 text-sm tracking-widest"
+          >
             ▶ PLAY AGAIN
           </button>
           <div className="pixel-rule-rainbow mt-6" />

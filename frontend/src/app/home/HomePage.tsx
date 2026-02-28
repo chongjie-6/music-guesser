@@ -3,11 +3,11 @@ import PlayWithFriendsButton from "../../components/buttons/PlayWithFriendsButto
 export default function HomePage() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-pixel-grid px-4 py-10">
-
       {/* Cabinet marquee strip */}
       <div className="absolute top-0 left-0 right-0 marquee-wrap">
         <div className="marquee-inner">
-          ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★&nbsp;
+          ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★ MUSIC
+          GUESSER ★ INSERT COIN ★&nbsp;
         </div>
       </div>
 
@@ -20,7 +20,7 @@ export default function HomePage() {
         {/* Pixel rule top */}
         <div className="pixel-rule-rainbow mb-6" />
 
-        <p className="font-display text-[9px] tracking-[.25em] uppercase glow-cyan blink mb-4">
+        <p className="font-display text-sm tracking-[.25em] uppercase glow-cyan blink mb-4">
           ▼ PLAYER 1 — PRESS START ▼
         </p>
 
@@ -32,7 +32,9 @@ export default function HomePage() {
         </h1>
 
         <p className="font-body text-2xl text-yellow-200/70 mb-8 leading-relaxed">
-          JAM WITH FRIENDS. GUESS THE TRACK.<br />DOMINATE THE SCOREBOARD.
+          JAM WITH FRIENDS. GUESS THE TRACK.
+          <br />
+          DOMINATE THE SCOREBOARD.
         </p>
 
         <div className="flex justify-start">
@@ -40,7 +42,7 @@ export default function HomePage() {
         </div>
 
         <div className="pixel-rule-yellow mt-8" />
-        <p className="font-display text-[8px] glow-yellow/40 text-yellow-500/40 mt-3 tracking-widest">
+        <p className="font-display text-sm glow-yellow/40 text-yellow-500/40 mt-3 tracking-widest">
           © 1984 BEAT THE DROP ARCADE CO.
         </p>
       </div>

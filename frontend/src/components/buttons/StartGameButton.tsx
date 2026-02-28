@@ -6,7 +6,7 @@ export const StartGameButton = ({ roomID }: { roomID: string | undefined }) => {
     <button
       onClick={() => roomID && onStartGame(roomID)}
       disabled={!roomID}
-      className="btn btn-green text-[8px]"
+      className="btn btn-green text-sm"
     >
       ▶ START GAME
     </button>

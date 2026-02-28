@@ -11,7 +11,7 @@ export const CreateRoomButton = ({ socket }: { socket: Socket }) => {
     navigate(`/play-with-friends/room/${roomID}`);
   };
   return (
-    <button onClick={onCreateRoom} className="btn btn-cyan text-[8px]">
+    <button onClick={onCreateRoom} className="btn btn-cyan text-sm">
       + CREATE ROOM
     </button>
   );

@@ -43,14 +43,14 @@ export default function PlayWithFriendsPage() {
           </h2>
 
           {socketMessage && (
-            <div className="pixel-box-red p-3 mb-5 font-display text-[9px] glow-red leading-relaxed">
+            <div className="pixel-box-red p-3 mb-5 font-display text-sm glow-red leading-relaxed">
               ⚠ ERROR: {socketMessage}
             </div>
           )}
 
           <div className="flex flex-col gap-5 mb-6">
             <div>
-              <label className="font-display text-[9px] glow-yellow block mb-2 tracking-widest uppercase">
+              <label className="font-display text-sm glow-yellow block mb-2 tracking-widest uppercase">
                 YOUR CALLSIGN
               </label>
               <input
@@ -62,7 +62,7 @@ export default function PlayWithFriendsPage() {
               />
             </div>
             <div>
-              <label className="font-display text-[9px] glow-cyan block mb-2 tracking-widest uppercase">
+              <label className="font-display text-sm glow-cyan block mb-2 tracking-widest uppercase">
                 ROOM CODE
                 <span className="font-body text-base text-cyan-500/50 normal-case tracking-normal ml-2">
                   (blank = create new)
@@ -84,7 +84,7 @@ export default function PlayWithFriendsPage() {
           </div>
 
           <div className="pixel-rule-yellow mt-8" />
-          <p className="font-display text-[8px] text-yellow-600/40 mt-3 tracking-widest">
+          <p className="font-display text-sm text-yellow-600/40 mt-3 tracking-widest">
             INSERT COIN TO CONTINUE
           </p>
         </div>
