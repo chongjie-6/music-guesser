@@ -7,15 +7,9 @@ import { useState } from "react";
 export default function SongSearchBar() {
   const [query, setQuery] = useState("");
   const [queryInput, setQueryInput] = useState("");
-  const debouncedQuery = useDebouncedCallback(() => {
-    setQuery(queryInput);
-  }, 300);
+  const debouncedQuery = useDebouncedCallback(() => setQuery(queryInput), 300);
 
-  const {
-    data: albums,
-    error,
-    isLoading,
-  } = useQuery<Album[]>({
+  const { data: albums, error, isLoading } = useQuery<Album[]>({
     queryKey: ["albums", query],
     queryFn: () => apiGet(`/albums`, { query, limit: "4", songsPerAlbum: "5" }),
     enabled: query.length > 0,
@@ -23,65 +17,60 @@ export default function SongSearchBar() {
 
   return (
     <>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-slate-900">Album search</h2>
+      <div className="mb-8">
+        <h2 className="font-display text-xl font-bold uppercase tracking-widest glow-cyan">◈ Album Search</h2>
         <div className="mt-4 flex w-full max-w-2xl flex-col gap-2 sm:flex-row">
           <input
             type="text"
-            placeholder="Search artist or album"
+            placeholder="Search artist or album..."
             value={queryInput}
             onChange={(e) => setQueryInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && debouncedQuery()}
-            className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 outline-none ring-slate-400 placeholder:text-slate-400 focus:ring-2"
+            className="flex-1 rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-cyan-100 tracking-wide placeholder:text-slate-600 transition-all"
           />
-          <button
-            type="button"
-            onClick={() => debouncedQuery()}
-            className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          >
+          <button type="button" onClick={() => debouncedQuery()} className="btn btn-cyan px-6 py-3">
             Search
           </button>
         </div>
       </div>
 
-      {isLoading && <div className="py-6 text-center text-slate-500">Loading albums...</div>}
-
+      {isLoading && (
+        <div className="py-8 text-center font-display text-sm uppercase tracking-widest glow-cyan">◈ Loading...</div>
+      )}
       {error && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-center text-rose-700">
-          Error fetching albums.
+        <div className="rounded-lg border border-red-500/30 bg-red-900/20 p-4 text-center font-display text-sm uppercase tracking-wider glow-red">
+          ⚠ Error fetching albums.
         </div>
       )}
 
       {albums && albums.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-2">
           {albums.map((album) => (
-            <article
-              key={album.collectionId}
-              className="rounded-xl border border-slate-200 bg-white p-4"
-            >
-              <div className="mb-3 flex gap-3">
+            <article key={album.collectionId}
+              className="brackets brackets-bottom relative rounded-xl p-4 transition-all hover:scale-[1.01] card-cyan">
+              <div className="mb-3 flex gap-4">
                 <img
                   src={album.artworkUrl100}
                   alt={`${album.collectionName} artwork`}
-                  className="h-24 w-24 rounded-md"
+                  className="h-20 w-20 rounded-md album-img-glow"
                 />
                 <div>
-                  <h3 className="text-base font-semibold text-slate-900">{album.collectionName}</h3>
-                  <p className="text-sm text-slate-600">{album.artistName}</p>
-                  <p className="text-xs text-slate-500">
-                    {album.primaryGenreName} • {new Date(album.releaseDate).getFullYear()} • {album.trackCount} tracks
+                  <h3 className="font-display text-sm font-bold uppercase tracking-wide text-cyan-200">{album.collectionName}</h3>
+                  <p className="text-sm text-fuchsia-300 mt-0.5">{album.artistName}</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {album.primaryGenreName} · {new Date(album.releaseDate).getFullYear()} · {album.trackCount} tracks
                   </p>
                 </div>
               </div>
-
               <div className="space-y-2">
                 {album.songs.map((song) => (
-                  <div key={song.trackId} className="rounded-md border border-slate-200 bg-slate-50 p-2">
-                    <p className="text-sm font-medium text-slate-800">
-                      {song.trackNumber ? `${song.trackNumber}. ` : ""}
+                  <div key={song.trackId}
+                    className="rounded-md p-2 border border-fuchsia-500/10 bg-fuchsia-500/3">
+                    <p className="text-sm text-slate-300">
+                      {song.trackNumber && <span className="text-fuchsia-500 font-display text-xs mr-1">{song.trackNumber}.</span>}
                       {song.trackName}
                     </p>
-                    {song.previewUrl && <audio controls src={song.previewUrl} className="mt-1 w-full" />}
+                    {song.previewUrl && <audio controls src={song.previewUrl} className="mt-1.5 w-full" />}
                   </div>
                 ))}
               </div>
@@ -91,7 +80,7 @@ export default function SongSearchBar() {
       )}
 
       {albums && albums.length === 0 && (
-        <div className="py-8 text-center text-slate-500">No albums found.</div>
+        <div className="py-10 text-center font-display text-sm uppercase tracking-widest text-slate-500">No results found.</div>
       )}
     </>
   );

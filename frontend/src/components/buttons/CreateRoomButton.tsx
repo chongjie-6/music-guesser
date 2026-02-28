@@ -4,20 +4,15 @@ import { setUserNameSocket } from "../../hooks/useSetUserNameSocket";
 
 export const CreateRoomButton = ({ socket }: { socket: Socket }) => {
   const navigate = useNavigate();
-
   const onCreateRoom = async () => {
     const roomID = crypto.randomUUID();
     socket.emit("create-room", roomID);
     setUserNameSocket();
     navigate(`/play-with-friends/room/${roomID}`);
   };
-
   return (
-    <button
-      onClick={onCreateRoom}
-      className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-    >
-      Create room
+    <button onClick={onCreateRoom} className="btn btn-cyan px-4 py-2">
+      Create Room
     </button>
   );
 };
