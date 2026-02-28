@@ -2,28 +2,51 @@ import PlayWithFriendsButton from "../../components/buttons/PlayWithFriendsButto
 
 export default function HomePage() {
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center gap-8 px-4 py-10 overflow-hidden">
-      {/* Background grid */}
-      <div className="pointer-events-none absolute inset-0 bg-grid-cyan" />
-      {/* Glow orbs */}
-      <div className="pointer-events-none absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-3xl" />
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-pixel-grid px-4 py-10">
 
-      <section className="brackets brackets-bottom relative w-full rounded-2xl p-10 text-center card-cyan">
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.3em] glow-cyan mb-4">
-          Music Guesser
+      {/* Cabinet marquee strip */}
+      <div className="absolute top-0 left-0 right-0 marquee-wrap">
+        <div className="marquee-inner">
+          ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★&nbsp;
+        </div>
+      </div>
+
+      {/* Screen glow orb */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="h-[500px] w-[500px] rounded-full bg-yellow-300/5 blur-3xl" />
+      </div>
+
+      <div className="pixel-box relative w-full max-w-xl p-8 mt-12">
+        {/* Pixel rule top */}
+        <div className="pixel-rule-rainbow mb-6" />
+
+        <p className="font-display text-[9px] tracking-[.25em] uppercase glow-cyan blink mb-4">
+          ▼ PLAYER 1 — PRESS START ▼
         </p>
-        <h1 className="font-display mt-2 text-5xl font-black uppercase tracking-wider text-gradient-neon">
-          Beat the Drop
+
+        <h1 className="font-display text-4xl leading-tight uppercase glow-pulse mb-2">
+          <span className="text-rainbow">BEAT</span>
         </h1>
-        <p className="mt-6 max-w-xl mx-auto text-lg text-blue-200/70">
-          Jam with friends. Guess the track. Dominate the scoreboard.
+        <h1 className="font-display text-4xl leading-tight uppercase glow-yellow mb-6">
+          THE DROP
+        </h1>
+
+        <p className="font-body text-2xl text-yellow-200/70 mb-8 leading-relaxed">
+          JAM WITH FRIENDS. GUESS THE TRACK.<br />DOMINATE THE SCOREBOARD.
         </p>
-        <div className="mt-8 flex justify-center">
+
+        <div className="flex justify-start">
           <PlayWithFriendsButton />
         </div>
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 divider-cyan" />
-      </section>
+
+        <div className="pixel-rule-yellow mt-8" />
+        <p className="font-display text-[8px] glow-yellow/40 text-yellow-500/40 mt-3 tracking-widest">
+          © 1984 BEAT THE DROP ARCADE CO.
+        </p>
+      </div>
+
+      {/* Bottom rainbow rule */}
+      <div className="absolute bottom-0 left-0 right-0 pixel-rule-rainbow" />
     </main>
   );
 }

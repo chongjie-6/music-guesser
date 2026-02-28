@@ -6,9 +6,9 @@ export const StartGameButton = ({ roomID }: { roomID: string | undefined }) => {
     <button
       onClick={() => roomID && onStartGame(roomID)}
       disabled={!roomID}
-      className="btn btn-green px-4 py-2"
+      className="btn btn-green text-[8px]"
     >
-      ▶ Start Game
+      ▶ START GAME
     </button>
   );
 };

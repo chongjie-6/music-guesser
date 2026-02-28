@@ -3,28 +3,28 @@ import { socket } from "../socket";
 
 export default function RoomNotFoundModal({ onGoBack }: { onGoBack: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-space-950/85">
-      <div className="mx-4 w-full max-w-md rounded-2xl p-8 relative overflow-hidden card-red">
-        <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-neon-red" />
-        <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-neon-red" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-cab-black/90 bg-pixel-grid">
+      <div className="w-full max-w-md mx-4">
+        <div className="pixel-box-red p-8">
+          <div className="pixel-rule-rainbow mb-6" />
 
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/10">
-          <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
+          <p className="font-display text-[8px] glow-red blink tracking-widest uppercase mb-4">
+            ⚠ ERROR ⚠
+          </p>
+          <h2 className="font-display text-xl glow-red uppercase mb-4 leading-snug">
+            ROOM NOT FOUND
+          </h2>
+          <p className="font-body text-xl text-red-300/70 mb-6 leading-relaxed">
+            THIS ROOM DOESN'T EXIST OR HAS ALREADY ENDED. CREATE A NEW ONE TO CONTINUE.
+          </p>
 
-        <h2 className="font-display text-xl font-bold uppercase tracking-wider glow-red">
-          Room Not Found
-        </h2>
-        <p className="mt-2 text-slate-400 text-sm">
-          This room doesn't exist or has already ended. Create a new one to continue.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <CreateRoomButton socket={socket} />
-          <button onClick={onGoBack} className="btn btn-ghost flex-1">
-            Go Back
-          </button>
+          <div className="flex gap-3 flex-wrap">
+            <CreateRoomButton socket={socket} />
+            <button onClick={onGoBack} className="btn btn-yellow text-[8px]">
+              ← GO BACK
+            </button>
+          </div>
+          <div className="pixel-rule-red mt-6" />
         </div>
       </div>
     </div>

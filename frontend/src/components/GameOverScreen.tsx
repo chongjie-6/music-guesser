@@ -1,71 +1,76 @@
 import type { GameEnd } from "../types/types";
 
-const MEDAL = ["🥇", "🥈", "🥉"];
+const RANK_LABELS = ["1ST", "2ND", "3RD", "4TH", "5TH"];
+const RANK_CLASSES = [
+  "score-row-top glow-yellow",
+  "score-row-2 glow-cyan",
+  "score-row-3 glow-magenta",
+  "score-row-dim text-yellow-200/40",
+  "score-row-dim text-yellow-200/30",
+];
 
 export default function GameOverScreen({ result, onPlayAgain }: { result: GameEnd; onPlayAgain: () => void }) {
-  const sortedScores = Object.entries(result.scores).sort(([, a], [, b]) => b - a);
+  const sorted = Object.entries(result.scores).sort(([, a], [, b]) => b - a);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-space-950/90">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-cab-black/95 bg-pixel-grid">
+      {/* CRT glow */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="h-96 w-96 rounded-full bg-cyan-500/8 blur-3xl" />
+        <div className="h-[600px] w-[600px] rounded-full bg-yellow-300/5 blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-md mx-4 overflow-hidden rounded-2xl card-cyan">
-        <div className="divider-cyan w-full" />
-        <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-neon-cyan" />
-        <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-neon-cyan" />
-
-        <div className="px-8 py-10 text-center">
-          <div className="mb-4 text-5xl drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">
-            {result.isTie ? "🤝" : "🏆"}
+      <div className="relative w-full max-w-md mx-4">
+        {/* Top marquee */}
+        <div className="marquee-wrap mb-4">
+          <div className="marquee-inner">
+            ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER ★&nbsp;
           </div>
+        </div>
 
-          <p className="font-display text-xs font-bold uppercase tracking-[0.4em] glow-cyan mb-2">
-            ◈ Game Over ◈
+        <div className="pixel-box p-8">
+          <div className="pixel-rule-rainbow mb-6" />
+
+          <p className="font-display text-[8px] glow-yellow tracking-[.3em] uppercase mb-4">
+            ◈ GAME OVER ◈
           </p>
 
           {result.isTie ? (
             <>
-              <h2 className="font-display text-3xl font-black uppercase glow-magenta">It's a Tie!</h2>
-              <p className="mt-2 text-slate-400 text-sm">{result.topScore} point{result.topScore !== 1 ? "s" : ""} each</p>
+              <h2 className="font-display text-2xl glow-cyan uppercase mb-1">IT'S A TIE!</h2>
+              <p className="font-body text-2xl text-yellow-200/60">{result.topScore} PTS EACH</p>
             </>
           ) : result.winner ? (
             <>
-              <h2 className="font-display text-3xl font-black uppercase text-gradient-winner">{result.winner}</h2>
-              <p className="font-display text-sm glow-cyan mt-1 uppercase tracking-widest">
-                Wins with {result.topScore} pts
-              </p>
+              <p className="font-display text-[8px] text-yellow-500/60 tracking-widest mb-2 uppercase">WINNER</p>
+              <h2 className="font-display text-2xl text-rainbow uppercase leading-snug mb-1">
+                {result.winner.toUpperCase()}
+              </h2>
+              <p className="font-body text-2xl glow-yellow">{result.topScore} PTS</p>
             </>
           ) : (
-            <>
-              <h2 className="font-display text-3xl font-black text-slate-400 uppercase">Nobody Scored</h2>
-              <p className="mt-2 text-slate-500 text-sm">Better luck next time</p>
-            </>
+            <h2 className="font-display text-xl text-yellow-600/60 uppercase">NO WINNER</h2>
           )}
 
-          {sortedScores.length > 0 && (
-            <div className="mt-8 rounded-xl overflow-hidden border border-cyan-500/10">
-              {sortedScores.map(([name, score], i) => (
+          {sorted.length > 0 && (
+            <div className="mt-6 flex flex-col gap-1.5">
+              {sorted.map(([name, score], i) => (
                 <div key={name}
-                  className={`flex items-center justify-between px-5 py-3 ${i === 0 ? "row-highlight-cyan" : "row-dim"} ${i < sortedScores.length - 1 ? "border-b border-cyan-500/6" : ""}`}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg w-6 text-center">{MEDAL[i] ?? `${i + 1}.`}</span>
-                    <span className={`font-display text-sm uppercase tracking-wider ${i === 0 ? "text-cyan-300" : "text-slate-400"}`}>{name}</span>
-                  </div>
-                  <span className={`font-display font-bold text-lg tabular-nums ${i === 0 ? "glow-cyan" : "text-slate-500"}`}>{score}</span>
+                  className={`flex items-center justify-between px-4 py-2.5 font-display text-[8px] ${RANK_CLASSES[i] ?? RANK_CLASSES[3]}`}>
+                  <span>{RANK_LABELS[i] ?? `${i+1}.`} {name.toUpperCase()}</span>
+                  <span>{score} PTS</span>
                 </div>
               ))}
             </div>
           )}
 
-          <div className="mt-8">
-            <button onClick={onPlayAgain} className="btn btn-cyan w-full py-3 text-sm">
-              ▶ Play Again
-            </button>
-          </div>
+          <button onClick={onPlayAgain} className="btn btn-yellow-fill w-full mt-6 py-3 text-[9px] tracking-widest">
+            ▶ PLAY AGAIN
+          </button>
+          <div className="pixel-rule-rainbow mt-6" />
+          <p className="font-display text-[7px] text-yellow-600/30 mt-3 text-center blink tracking-widest">
+            INSERT COIN TO CONTINUE
+          </p>
         </div>
-        <div className="divider-magenta w-full" />
       </div>
     </div>
   );

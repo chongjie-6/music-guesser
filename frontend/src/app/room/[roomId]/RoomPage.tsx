@@ -21,29 +21,20 @@ export default function RoomPage() {
   const [gameEnd, setGameEnd] = useState<GameEnd | null>(null);
 
   useEffect(() => {
-    if (roomId) {
-      setRoomNotFound(false);
-      setError("");
-      socket.emit("join-room", roomId);
-    }
+    if (roomId) { setRoomNotFound(false); setError(""); socket.emit("join-room", roomId); }
   }, [roomId]);
 
   useEffect(() => {
     socket.on("error", (message: string) => {
-      if (message === "Room does not exist") setRoomNotFound(true);
-      else setError(message);
+      if (message === "Room does not exist") setRoomNotFound(true); else setError(message);
     });
-    socket.on("game-started", (payload: GameRound) => {
-      setRound(payload); setScores(payload.scores || {}); setLastWinnerMessage(""); setGameEnd(null);
-    });
-    socket.on("game-next-round", (payload: GameRound) => {
-      setRound(payload); setScores(payload.scores || {});
-    });
+    socket.on("game-started", (payload: GameRound) => { setRound(payload); setScores(payload.scores || {}); setLastWinnerMessage(""); setGameEnd(null); });
+    socket.on("game-next-round", (payload: GameRound) => { setRound(payload); setScores(payload.scores || {}); });
     socket.on("game-correct-guess", ({ winner, answer }: { winner: string; answer: string }) => {
-      setLastWinnerMessage(`${winner} guessed correctly. Answer: ${answer}.`);
+      setLastWinnerMessage(`${winner} GUESSED IT! ANSWER: ${answer}`);
     });
     socket.on("skipped-round", (payload: GameRound & { answer?: string }) => {
-      setLastWinnerMessage(payload.answer ? `Nobody guessed it. Answer: ${payload.answer}` : "Nobody guessed that in time...");
+      setLastWinnerMessage(payload.answer ? `TIME OUT! ANSWER: ${payload.answer}` : "NOBODY GUESSED IN TIME...");
       if (payload.round) { setRound(payload); setScores(payload.scores || {}); }
     });
     socket.on("game-end", (result: GameEnd) => { setGameEnd(result); setScores(result.scores || {}); });
@@ -55,89 +46,101 @@ export default function RoomPage() {
 
   useNewMessageSocket(setMessages);
 
-  const handlePlayAgain = () => { setGameEnd(null); setRound(null); setScores({}); setLastWinnerMessage(""); };
-
   return (
     <>
       {roomNotFound && <RoomNotFoundModal onGoBack={() => navigate("/play-with-friends")} />}
-      {gameEnd && <GameOverScreen result={gameEnd} onPlayAgain={handlePlayAgain} />}
+      {gameEnd && <GameOverScreen result={gameEnd} onPlayAgain={() => { setGameEnd(null); setRound(null); setScores({}); setLastWinnerMessage(""); }} />}
 
-      <main className="relative mx-auto grid min-h-screen w-full max-w-7xl gap-4 px-4 py-6 lg:grid-cols-[2fr_1fr] overflow-hidden">
-        <div className="pointer-events-none fixed inset-0 -z-10 bg-grid-cyan opacity-60" />
-
-        <div>
-          {error && (
-            <div className="mb-3 rounded-lg border border-red-500/30 bg-red-900/20 p-3 text-sm glow-red">
-              ⚠ {error}
-            </div>
-          )}
-          <ChatMessages messages={messages} roomId={roomId} />
+      <main className="relative min-h-screen bg-pixel-grid overflow-hidden">
+        {/* Top marquee */}
+        <div className="marquee-wrap sticky top-0 z-10">
+          <div className="marquee-inner">
+            ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;
+          </div>
         </div>
 
-        <aside className="h-fit rounded-xl p-4 card-cyan">
-          {/* Room ID */}
-          <div className="mb-4 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-            <p className="font-display text-xs text-slate-500 uppercase tracking-widest">Room ID</p>
-            <p className="font-display text-xs glow-cyan truncate mt-0.5">{roomId}</p>
+        <div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[1fr_300px]">
+
+          {/* Chat panel */}
+          <div>
+            {error && (
+              <div className="pixel-box-red p-3 mb-3 font-display text-[9px] glow-red">
+                ⚠ {error}
+              </div>
+            )}
+            <ChatMessages messages={messages} roomId={roomId} />
           </div>
 
-          <div className="mb-4 flex flex-wrap gap-2">
-            <StartGameButton roomID={roomId} />
-            {roomId && <LeaveRoomButton socket={socket} roomID={roomId} />}
-            <button
-              onClick={() => navigate("/play-with-friends")}
-              className="btn btn-ghost"
-            >
-              Back
-            </button>
-          </div>
+          {/* Sidebar */}
+          <aside className="flex flex-col gap-3">
+            {/* Room ID */}
+            <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
+              <p className="font-display text-[8px] text-yellow-600/60 uppercase tracking-widest mb-1">ROOM CODE</p>
+              <p className="font-display text-[9px] glow-yellow truncate">{roomId}</p>
+            </div>
 
-          {round && (
-            <section className="mt-4 rounded-lg border border-fuchsia-500/20 bg-slate-900/60 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-display text-sm font-bold uppercase tracking-widest glow-magenta">
-                  Round {round.round}
-                </h2>
-                <span className="font-display text-xs text-slate-500">/ 10</span>
+            {/* Controls */}
+            <div className="flex flex-wrap gap-2">
+              <StartGameButton roomID={roomId} />
+              {roomId && <LeaveRoomButton socket={socket} roomID={roomId} />}
+              <button onClick={() => navigate("/play-with-friends")} className="btn btn-yellow text-[8px]">
+                ← BACK
+              </button>
+            </div>
+
+            {/* Round info */}
+            {round && (
+              <div className="pixel-box-cyan p-4">
+                <div className="pixel-rule-cyan mb-3" />
+                <p className="font-display text-[8px] glow-cyan uppercase tracking-widest mb-3">
+                  — ROUND {round.round} / 10 —
+                </p>
+                <div className="font-body text-xl space-y-1 text-cyan-200/80">
+                  <p>ARTIST: <span className="glow-magenta">{round.artistName}</span></p>
+                  <p>GENRE: <span className="glow-magenta">{round.primaryGenreName}</span></p>
+                  <p>YEAR: <span className="glow-magenta">{new Date(round.releaseDate).getFullYear()}</span></p>
+                </div>
+                <audio controls src={round.previewUrl} className="mt-3 w-full" autoPlay />
+                <div className="pixel-rule-cyan mt-3" />
               </div>
-              <div className="space-y-1 text-sm">
-                <p className="text-slate-400">Artist: <span className="text-fuchsia-300">{round.artistName}</span></p>
-                <p className="text-slate-400">Genre: <span className="text-fuchsia-300">{round.primaryGenreName}</span></p>
-                <p className="text-slate-400">Year: <span className="text-fuchsia-300">{new Date(round.releaseDate).getFullYear()}</span></p>
+            )}
+
+            {/* Winner flash */}
+            {lastWinnerMessage && (
+              <div className="pixel-box-magenta p-3 font-display text-[8px] glow-magenta leading-relaxed blink">
+                ★ {lastWinnerMessage}
               </div>
-              <audio controls src={round.previewUrl} className="mt-3 w-full" autoPlay />
-            </section>
-          )}
+            )}
 
-          {lastWinnerMessage && (
-            <p className="mt-3 rounded-lg border border-green-500/20 bg-green-900/10 p-2 text-xs font-display glow-green">
-              ✓ {lastWinnerMessage}
-            </p>
-          )}
+            {/* Scoreboard */}
+            {Object.keys(scores).length > 0 && (
+              <div className="pixel-box p-4">
+                <div className="pixel-rule-rainbow mb-3" />
+                <p className="font-display text-[9px] glow-yellow mb-3 tracking-widest">
+                  HI-SCORE TABLE
+                </p>
+                <ul className="flex flex-col gap-1.5">
+                  {Object.entries(scores)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([player, score], i) => (
+                      <li key={player}
+                        className={`flex justify-between items-center px-3 py-2 font-display text-[8px] ${
+                          i === 0 ? "score-row-top glow-yellow"
+                          : i === 1 ? "score-row-2 glow-cyan"
+                          : i === 2 ? "score-row-3 glow-magenta"
+                          : "score-row-dim text-yellow-200/40"
+                        }`}>
+                        <span>{i + 1}. {player.toUpperCase()}</span>
+                        <span>{score} PTS</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+          </aside>
+        </div>
 
-          {Object.keys(scores).length > 0 && (
-            <section className="mt-4">
-              <h3 className="mb-3 font-display text-xs font-semibold uppercase tracking-[0.2em] glow-cyan">
-                ▶ Scoreboard
-              </h3>
-              <ul className="space-y-1.5">
-                {Object.entries(scores)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([player, score], i) => (
-                    <li key={player}
-                      className={`flex justify-between items-center rounded-md px-3 py-2 text-sm ${i === 0 ? "row-highlight-cyan" : "row-dim"}`}>
-                      <span className={i === 0 ? "text-cyan-300 font-semibold" : "text-slate-400"}>
-                        {i === 0 ? "◆ " : `${i + 1}. `}{player}
-                      </span>
-                      <span className={`font-display font-bold tabular-nums ${i === 0 ? "glow-cyan" : "text-slate-500"}`}>
-                        {score}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-            </section>
-          )}
-        </aside>
+        <div className="absolute bottom-0 left-0 right-0 pixel-rule-rainbow" />
       </main>
     </>
   );

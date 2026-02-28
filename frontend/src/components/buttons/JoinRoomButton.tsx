@@ -11,8 +11,8 @@ export const JoinRoomButton = ({ socket, roomID }: { socket: Socket; roomID: str
     navigate(`/play-with-friends/room/${roomID}`);
   };
   return (
-    <button onClick={onJoinRoom} className="btn btn-magenta-outline px-4 py-2">
-      Join Room
+    <button onClick={onJoinRoom} className="btn btn-yellow text-[8px]">
+      ▶ JOIN ROOM
     </button>
   );
 };

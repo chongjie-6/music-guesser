@@ -19,63 +19,76 @@ export default function PlayWithFriendsPage() {
   };
 
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-3xl items-center px-4 overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-grid-magenta" />
-      <div className="pointer-events-none absolute top-0 left-1/3 h-96 w-96 rounded-full bg-fuchsia-500/8 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-cyan-500/8 blur-3xl" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-pixel-grid px-4 py-10">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="h-[600px] w-[600px] rounded-full bg-cyan-400/4 blur-3xl" />
+      </div>
 
-      <section className="brackets brackets-bottom brackets-magenta brackets-magenta-bottom relative w-full rounded-2xl p-8 card-magenta">
-        <h1 className="font-display text-2xl font-bold uppercase tracking-widest glow-magenta">
-          Multiplayer Lobby
-        </h1>
-        <p className="mt-2 text-blue-300/60 text-sm tracking-wide uppercase">
-          Set your callsign, then create or join a room.
-        </p>
+      <div className="w-full max-w-lg">
+        {/* Marquee header */}
+        <div className="marquee-wrap mb-4">
+          <div className="marquee-inner">
+            ★ MULTIPLAYER LOBBY ★ CHOOSE YOUR CALLSIGN ★ CREATE OR JOIN A ROOM ★&nbsp;
+          </div>
+        </div>
 
-        {socketMessage && (
-          <p className="mt-4 rounded-lg border border-red-500/30 bg-red-900/20 p-3 text-sm glow-red">
-            ⚠ {socketMessage}
+        <div className="pixel-box-cyan p-8">
+          <div className="pixel-rule-cyan mb-6" />
+
+          <h1 className="font-display text-lg leading-snug glow-cyan uppercase mb-1">
+            MULTIPLAYER
+          </h1>
+          <h2 className="font-display text-lg leading-snug glow-yellow uppercase mb-6">
+            LOBBY
+          </h2>
+
+          {socketMessage && (
+            <div className="pixel-box-red p-3 mb-5 font-display text-[9px] glow-red leading-relaxed">
+              ⚠ ERROR: {socketMessage}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-5 mb-6">
+            <div>
+              <label className="font-display text-[9px] glow-yellow block mb-2 tracking-widest uppercase">
+                YOUR CALLSIGN
+              </label>
+              <input
+                type="text"
+                placeholder="ENTER NAME_"
+                value={username}
+                onChange={(e) => handleSetUsername(e.target.value)}
+                className="w-full border-2 border-yellow-400/50 bg-cab-black px-3 py-3 text-yellow-200 tracking-widest placeholder:text-yellow-900/60 transition-all"
+              />
+            </div>
+            <div>
+              <label className="font-display text-[9px] glow-cyan block mb-2 tracking-widest uppercase">
+                ROOM CODE
+                <span className="font-body text-base text-cyan-500/50 normal-case tracking-normal ml-2">
+                  (blank = create new)
+                </span>
+              </label>
+              <input
+                type="text"
+                placeholder="PASTE CODE HERE_"
+                value={roomID}
+                onChange={(e) => setRoomID(e.target.value)}
+                className="w-full border-2 border-cyan-400/50 bg-cab-black px-3 py-3 text-cyan-200 tracking-widest placeholder:text-cyan-900/50 transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <JoinRoomButton socket={socket} roomID={roomID} />
+            <CreateRoomButton socket={socket} />
+          </div>
+
+          <div className="pixel-rule-yellow mt-8" />
+          <p className="font-display text-[8px] text-yellow-600/40 mt-3 tracking-widest">
+            INSERT COIN TO CONTINUE
           </p>
-        )}
-
-        <div className="mt-6 flex flex-col gap-4">
-          <div>
-            <label className="mb-1 block font-display text-xs font-semibold uppercase tracking-[0.2em] glow-cyan">
-              Your Callsign
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. SHADOW_X"
-              value={username}
-              onChange={(e) => handleSetUsername(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-cyan-100 tracking-wider placeholder:text-slate-600 transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block font-display text-xs font-semibold uppercase tracking-[0.2em] glow-magenta">
-              Room ID{" "}
-              <span className="font-normal text-slate-500 normal-case tracking-normal text-xs">
-                (blank = create new)
-              </span>
-            </label>
-            <input
-              type="text"
-              placeholder="Paste a room ID to infiltrate"
-              value={roomID}
-              onChange={(e) => setRoomID(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-3 text-fuchsia-100 tracking-wider placeholder:text-slate-600 transition-all"
-            />
-          </div>
         </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <JoinRoomButton socket={socket} roomID={roomID} />
-          <CreateRoomButton socket={socket} />
-        </div>
-
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 divider-magenta" />
-      </section>
+      </div>
     </main>
   );
 }

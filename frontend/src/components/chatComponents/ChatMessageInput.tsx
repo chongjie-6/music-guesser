@@ -14,10 +14,12 @@ export default function ChatMessageInput({ roomId }: { roomId: string | undefine
     <form className="flex gap-2" onSubmit={onSubmit}>
       <input
         name="message"
-        placeholder="Type your guess..."
-        className="w-full rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-cyan-100 placeholder:text-slate-600 transition-all"
+        placeholder="TYPE YOUR GUESS_"
+        className="flex-1 border-2 border-yellow-400/40 bg-cab-black px-3 py-2.5 text-yellow-200 tracking-wider placeholder:text-yellow-900/50 transition-all"
       />
-      <button type="submit" className="btn btn-cyan px-4 py-2">Send</button>
+      <button type="submit" className="btn btn-yellow-fill text-[8px] px-4">
+        SEND
+      </button>
     </form>
   );
 }
