@@ -1,4 +1,5 @@
 import type { GameEnd } from "../types/types";
+import InfiniteLooper from "./InfiniteLooper";
 
 const RANK_LABELS = ["1ST", "2ND", "3RD", "4TH", "5TH"];
 const RANK_CLASSES = [
@@ -28,10 +29,9 @@ export default function GameOverScreen({
       <div className="relative w-full max-w-md mx-4">
         {/* Top marquee */}
         <div className="marquee-wrap mb-4">
-          <div className="marquee-inner">
-            ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER ★&nbsp;
-            ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER ★&nbsp;
-          </div>
+          <InfiniteLooper speed={6} direction={"left"}>
+            ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER&nbsp;
+          </InfiniteLooper>
         </div>
 
         <div className="pixel-box p-8">

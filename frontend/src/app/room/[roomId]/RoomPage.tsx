@@ -13,6 +13,7 @@ import { StartGameButton } from "../../../components/buttons/StartGameButton";
 import { LeaveRoomButton } from "../../../components/buttons/LeaveRoomButton";
 import GameOverScreen from "../../../components/GameOverScreen";
 import RoomNotFoundModal from "../../../components/RoomNotFound";
+import InfiniteLooper from "../../../components/InfiniteLooper";
 
 export default function RoomPage() {
   const { roomId } = useParams();
@@ -107,19 +108,11 @@ export default function RoomPage() {
       <main className="relative min-h-screen bg-pixel-grid overflow-hidden">
         {/* Top marquee */}
         <div className="marquee-wrap marquee-fast sticky top-0 z-10">
-          <div className="marquee-inner">
+          <InfiniteLooper speed={6} direction={"left"}>
+            {" "}
             ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE
-            DROP ★&nbsp; ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★
-            BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE
-            TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★
-            GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN
-            PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★
-            ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT
-            THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP
-            ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT
-            THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE
-            TRACK ★ BEAT THE DROP ★&nbsp;
-          </div>
+            DROP&nbsp;{" "}
+          </InfiniteLooper>
         </div>
 
         <div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[1fr_300px]">

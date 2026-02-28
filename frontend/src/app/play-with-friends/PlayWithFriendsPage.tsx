@@ -3,6 +3,7 @@ import { socket } from "../../socket";
 import { useErrorSocket } from "../../hooks/useErrorSocket";
 import { CreateRoomButton } from "../../components/buttons/CreateRoomButton";
 import { JoinRoomButton } from "../../components/buttons/JoinRoomButton";
+import InfiniteLooper from "../../components/InfiniteLooper";
 
 export default function PlayWithFriendsPage() {
   const [socketMessage, setSocketMessage] = useState<string>("");
@@ -27,11 +28,11 @@ export default function PlayWithFriendsPage() {
       <div className="w-full max-w-lg">
         {/* Marquee header */}
         <div className="marquee-wrap mb-4">
-          <div className="marquee-inner">
+          <InfiniteLooper speed={8} direction={"left"}>
+            {" "}
             ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★
-            MUSIC GUESSER ★ INSERT COIN ★&nbsp; ★ BEAT THE DROP ★ MUSIC GUESSER
-            ★ INSERT COIN ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★&nbsp;
-          </div>
+            MUSIC GUESSER ★ INSERT COIN&nbsp;
+          </InfiniteLooper>
         </div>
 
         <div className="pixel-box-cyan p-8">
