@@ -109,7 +109,16 @@ export default function RoomPage() {
         <div className="marquee-wrap marquee-fast sticky top-0 z-10">
           <div className="marquee-inner">
             ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE
-            DROP ★&nbsp;
+            DROP ★&nbsp; ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★
+            BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE
+            TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★
+            GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN
+            PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★
+            ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT
+            THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP
+            ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT
+            THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE
+            TRACK ★ BEAT THE DROP ★&nbsp;
           </div>
         </div>
 

@@ -30,6 +30,7 @@ export default function GameOverScreen({
         <div className="marquee-wrap mb-4">
           <div className="marquee-inner">
             ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER ★&nbsp;
+            ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER ★&nbsp;
           </div>
         </div>
 

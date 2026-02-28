@@ -102,10 +102,10 @@ audio {
 }
 @keyframes marquee {
   0% {
-    transform: translateX(300%);
+    transform: translateX(0%);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 @keyframes glow-pulse {
@@ -359,6 +359,7 @@ audio {
   overflow: hidden;
   background: var(--color-arcade-yellow);
 }
+
 .marquee-inner {
   display: inline-block;
   white-space: nowrap;
@@ -367,7 +368,7 @@ audio {
   color: var(--color-cab-black);
   letter-spacing: 0.15em;
   padding: 7px 0;
-  animation: marquee 25s linear infinite;
+  animation: marquee 12s linear infinite;
 }
 
 /* ── Score rows ── */

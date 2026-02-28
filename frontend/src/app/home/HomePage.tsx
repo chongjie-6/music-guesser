@@ -7,7 +7,8 @@ export default function HomePage() {
       <div className="absolute top-0 left-0 right-0 marquee-wrap">
         <div className="marquee-inner">
           ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★ MUSIC
-          GUESSER ★ INSERT COIN ★&nbsp;
+          GUESSER ★ INSERT COIN ★&nbsp; ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT
+          COIN ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★&nbsp;
         </div>
       </div>
 

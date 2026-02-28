@@ -28,8 +28,9 @@ export default function PlayWithFriendsPage() {
         {/* Marquee header */}
         <div className="marquee-wrap mb-4">
           <div className="marquee-inner">
-            ★ MULTIPLAYER LOBBY ★ CHOOSE YOUR CALLSIGN ★ CREATE OR JOIN A ROOM
-            ★&nbsp;
+            ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★
+            MUSIC GUESSER ★ INSERT COIN ★&nbsp; ★ BEAT THE DROP ★ MUSIC GUESSER
+            ★ INSERT COIN ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★&nbsp;
           </div>
         </div>
 
