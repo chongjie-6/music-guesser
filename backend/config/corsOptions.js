@@ -2,6 +2,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://music-guesser-pi.vercel.app",
   "https://music-guesser-production.up.railway.app",
+  "https://music-guesser.up.railway.app",
 ];
 
 const corsOptions = {
