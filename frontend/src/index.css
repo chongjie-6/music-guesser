@@ -132,7 +132,7 @@ audio {
 }
 
 .blink {
-  animation: blink 2s step-end infinite;
+  animation: blink 1.2s step-end infinite;
 }
 .glow-pulse {
   animation: glow-pulse 2s ease-in-out infinite;
@@ -367,7 +367,7 @@ audio {
   color: var(--color-cab-black);
   letter-spacing: 0.15em;
   padding: 7px 0;
-  animation: marquee 24s linear infinite;
+  animation: marquee 25s linear infinite;
 }
 
 /* ── Score rows ── */

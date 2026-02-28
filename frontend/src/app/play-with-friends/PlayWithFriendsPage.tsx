@@ -28,7 +28,8 @@ export default function PlayWithFriendsPage() {
         {/* Marquee header */}
         <div className="marquee-wrap mb-4">
           <div className="marquee-inner">
-            ★ MULTIPLAYER LOBBY ★ CHOOSE YOUR CALLSIGN ★ CREATE OR JOIN A ROOM ★&nbsp;
+            ★ MULTIPLAYER LOBBY ★ CHOOSE YOUR CALLSIGN ★ CREATE OR JOIN A ROOM
+            ★&nbsp;
           </div>
         </div>
 
