@@ -48,7 +48,7 @@ export default function SongSearchBar() {
       {albums && albums.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-2">
           {albums.map((album) => (
-            <article key={album.collectionId} className="pixel-box-cyan p-4 transition-all hover:translate-x-[-2px] hover:translate-y-[-2px]">
+            <article key={album.collectionId} className="pixel-box-cyan p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5">
               <div className="mb-3 flex gap-4">
                 <img
                   src={album.artworkUrl100}
