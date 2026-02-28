@@ -6,9 +6,17 @@ export default function HomePage() {
       {/* Cabinet marquee strip */}
       <div className="absolute top-0 left-0 right-0 marquee-wrap">
         <div className="marquee-inner">
-          ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★ MUSIC
-          GUESSER ★ INSERT COIN ★&nbsp; ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT
-          COIN ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★&nbsp;
+          ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP
+          ★&nbsp; ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT
+          THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK
+          ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE
+          TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN PROGRESS ★
+          GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★ ROUND IN
+          PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE DROP ★
+          ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★ BEAT THE
+          DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP ★&nbsp;★
+          BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP
+          ★&nbsp;
         </div>
       </div>
 
