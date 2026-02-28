@@ -1,6 +1,6 @@
 const { getRandomSong } = require("./spotifyService");
 const songsByRoom = new Map();
-const MAX_ROUNDS = 5;
+const MAX_ROUNDS = 10;
 
 const normalizeText = (value = "") =>
   String(value)
@@ -24,7 +24,8 @@ const buildPublicRound = (song, round) => ({
  */
 const computeGameResult = (scores) => {
   const entries = Object.entries(scores);
-  if (entries.length === 0) return { winner: null, scores, isTie: true, topScore: 0 };
+  if (entries.length === 0)
+    return { winner: null, scores, isTie: true, topScore: 0 };
 
   const sorted = entries.sort(([, a], [, b]) => b - a);
   const topScore = sorted[0][1];

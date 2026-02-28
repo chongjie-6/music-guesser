@@ -8,7 +8,7 @@ const {
 // Track active timers per room so they can be cleared on correct guess
 const roomTimers = new Map();
 
-const ROUND_TIMEOUT_MS = 5000;
+const ROUND_TIMEOUT_MS = 10000;
 
 /**
  * Clears any existing skip timer for a room.
