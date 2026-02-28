@@ -69,7 +69,7 @@ const populateDatabaseWithSongs = async () => {
       console.error(`Failed to insert "${song}":`, e.message);
     }
 
-    await setTimeout(5000);
+    await setTimeout(10000);
   }
 
   console.log("Done inserting all songs.");
