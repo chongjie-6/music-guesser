@@ -138,9 +138,14 @@ const skipRound = async (roomId) => {
   };
 };
 
+const destroyRoomGame = (roomId) => {
+  songsByRoom.delete(roomId);
+};
+
 module.exports = {
   getRoomGame,
   startRoomGame,
   submitGuess,
   skipRound,
+  destroyRoomGame,
 };

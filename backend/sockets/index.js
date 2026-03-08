@@ -11,9 +11,6 @@ module.exports = (io) => {
     gameHandler(io, socket);
     messageHandler(io, socket);
     userHandler(io, socket);
-
-    socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.id}`);
-    });
+    
   });
 };

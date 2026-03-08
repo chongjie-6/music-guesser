@@ -1,4 +1,3 @@
-
 /**
  * Helper function to check if a room with the given ID exists
  * @param {String} roomID Id of the room to check
@@ -24,7 +23,18 @@ const checkMaxPlayersReached = (roomID, io, maxPlayers = 4) => {
   return playerCount >= maxPlayers;
 };
 
+/**
+ * Helper function to check if a room with the given ID has any players
+ * @param {Object} io Socket.io server instance
+ * @returns Boolean indicating whether the room has any players
+ */
+const checkIfAnyPlayerExists = (roomID, io) => {
+  const playerCount = io.sockets.adapter.rooms.get(roomID)?.size;
+  return playerCount != 0;
+};
+
 module.exports = {
   checkRoomExists,
   checkMaxPlayersReached,
+  checkIfAnyPlayerExists,
 };

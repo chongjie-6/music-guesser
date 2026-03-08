@@ -22,13 +22,12 @@ const clearRoomTimer = (roomId) => {
 };
 
 /**
- * Starts a 5-second timer for a room. If nobody guesses in time,
+ * Starts a timer for a room. If nobody guesses in time,
  * skips the round without awarding any points and emits "skipped-round"
  * or "game-end" if the game is over.
  */
 const startRoundTimer = (io, roomId) => {
   clearRoomTimer(roomId);
-
   const timer = setTimeout(async () => {
     try {
       const result = await skipRound(roomId);
@@ -36,9 +35,14 @@ const startRoundTimer = (io, roomId) => {
 
       if (result.gameOver) {
         clearRoomTimer(roomId);
-        io.in(roomId).emit("skipped-round", { answer: result.answer, scores: result.result.scores });
+        io.in(roomId).emit("skipped-round", {
+          answer: result.answer,
+          scores: result.result.scores,
+        });
         io.in(roomId).emit("game-end", result.result);
-        console.log(`Game over in room ${roomId} after skip. Winner: ${result.result.winner}`);
+        console.log(
+          `Game over in room ${roomId} after skip. Winner: ${result.result.winner}`,
+        );
         return;
       }
 
@@ -47,7 +51,9 @@ const startRoundTimer = (io, roomId) => {
         answer: result.answer,
       });
 
-      console.log(`Round skipped in room ${roomId}. Answer was: ${result.answer}`);
+      console.log(
+        `Round skipped in room ${roomId}. Answer was: ${result.answer}`,
+      );
 
       // Start timer for next round
       startRoundTimer(io, roomId);
