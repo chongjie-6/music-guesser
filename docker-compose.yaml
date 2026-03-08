@@ -1,0 +1,22 @@
+services:
+  app:
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend
+          target: /usr/src/app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./backend/package.json
+        - action: rebuild
+          path: ./frontend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "3500:3500"
+    env_file:
+      - backend/.env
+    environment:
+      NODE_ENV: production
