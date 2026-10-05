@@ -1,7 +1,7 @@
-const { checkRoomExists } = require("../../service/roomService");
+const { isInRoom } = require("../../service/roomService");
 const {
+  isGameRunning,
   startRoomGame,
-  getRoomGame,
   skipRound,
 } = require("../../service/gameService");
 
@@ -22,44 +22,34 @@ const clearRoomTimer = (roomId) => {
 };
 
 /**
+ * Emits the next round and restarts the skip timer, or ends the game.
+ */
+const continueGame = (io, roomId, result) => {
+  if (result.gameOver) {
+    clearRoomTimer(roomId);
+    io.in(roomId).emit("game-end", result.result);
+    console.log(`Game over in room ${roomId}. Winner: ${result.result.winner}`);
+    return;
+  }
+
+  io.in(roomId).emit("game-next-round", result.nextRound);
+  startRoundTimer(io, roomId);
+};
+
+/**
  * Starts a timer for a room. If nobody guesses in time,
- * skips the round without awarding any points and emits "skipped-round"
- * or "game-end" if the game is over.
+ * skips the round without awarding any points.
  */
 const startRoundTimer = (io, roomId) => {
   clearRoomTimer(roomId);
-  const timer = setTimeout(async () => {
-    try {
-      const result = await skipRound(roomId);
-      if (!result) return;
+  const timer = setTimeout(() => {
+    roomTimers.delete(roomId);
+    const result = skipRound(roomId);
+    if (!result) return;
 
-      if (result.gameOver) {
-        clearRoomTimer(roomId);
-        io.in(roomId).emit("skipped-round", {
-          answer: result.answer,
-          scores: result.result.scores,
-        });
-        io.in(roomId).emit("game-end", result.result);
-        console.log(
-          `Game over in room ${roomId} after skip. Winner: ${result.result.winner}`,
-        );
-        return;
-      }
-
-      io.in(roomId).emit("skipped-round", {
-        ...result.nextRound,
-        answer: result.answer,
-      });
-
-      console.log(
-        `Round skipped in room ${roomId}. Answer was: ${result.answer}`,
-      );
-
-      // Start timer for next round
-      startRoundTimer(io, roomId);
-    } catch (error) {
-      console.log("skip-round error", error);
-    }
+    io.in(roomId).emit("skipped-round", { answer: result.answer });
+    console.log(`Round skipped in room ${roomId}. Answer was: ${result.answer}`);
+    continueGame(io, roomId, result);
   }, ROUND_TIMEOUT_MS);
 
   roomTimers.set(roomId, timer);
@@ -70,28 +60,22 @@ module.exports = (io, socket) => {
    * Event: start-game
    */
   socket.on("start-game", async (roomID) => {
-    if (!roomID || roomID.trim() === "") {
-      socket.emit("error", "Invalid room ID");
+    if (!isInRoom(socket, roomID)) {
+      socket.emit("error", "You are not in this room");
       return;
     }
 
-    if (!checkRoomExists(roomID, io)) {
-      socket.emit("error", "Room does not exist");
-      return;
-    }
-
-    if (getRoomGame(roomID)?.isActive) {
+    if (isGameRunning(roomID)) {
       socket.emit("error", "Game is already active");
       return;
     }
 
     try {
       const roundData = await startRoomGame(roomID);
-      io.in(roomID).emit("game-started", roundData);
-      io.in(roomID).emit("message", "Game started! Guess the song title.");
-      console.log(`Game started by: ${socket.id}`);
+      if (!roundData) return;
 
-      // Start the skip timer for the first round
+      io.in(roomID).emit("game-started", roundData);
+      console.log(`Game started by: ${socket.id}`);
       startRoundTimer(io, roomID);
     } catch (error) {
       console.log("start-game error", error);
@@ -101,4 +85,4 @@ module.exports = (io, socket) => {
 };
 
 module.exports.clearRoomTimer = clearRoomTimer;
-module.exports.startRoundTimer = startRoundTimer;
+module.exports.continueGame = continueGame;

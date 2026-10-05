@@ -17,8 +17,6 @@ export default function GameOverScreen({
   result: GameEnd;
   onPlayAgain: () => void;
 }) {
-  const sorted = Object.entries(result.scores).sort(([, a], [, b]) => b - a);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-cab-black/95 bg-pixel-grid">
       {/* CRT glow */}
@@ -68,11 +66,11 @@ export default function GameOverScreen({
             </h2>
           )}
 
-          {sorted.length > 0 && (
+          {result.scores.length > 0 && (
             <div className="mt-6 flex flex-col gap-1.5">
-              {sorted.map(([name, score], i) => (
+              {result.scores.map(({ id, name, score }, i) => (
                 <div
-                  key={name}
+                  key={id}
                   className={`flex items-center justify-between px-4 py-2.5 font-display text-sm ${RANK_CLASSES[i] ?? RANK_CLASSES[3]}`}
                 >
                   <span>

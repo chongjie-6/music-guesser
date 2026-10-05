@@ -23,18 +23,18 @@ const checkMaxPlayersReached = (roomID, io, maxPlayers = 4) => {
   return playerCount >= maxPlayers;
 };
 
+const isValidRoomId = (roomID) =>
+  typeof roomID === "string" && roomID.trim() !== "" && roomID.length <= 64;
+
 /**
- * Helper function to check if a room with the given ID has any players
- * @param {Object} io Socket.io server instance
- * @returns Boolean indicating whether the room has any players
+ * Whether the socket is in the given game room (excluding its private socket room)
  */
-const checkIfAnyPlayerExists = (roomID, io) => {
-  const playerCount = io.sockets.adapter.rooms.get(roomID)?.size;
-  return playerCount != 0;
-};
+const isInRoom = (socket, roomID) =>
+  roomID !== socket.id && socket.rooms.has(roomID);
 
 module.exports = {
   checkRoomExists,
   checkMaxPlayersReached,
-  checkIfAnyPlayerExists,
+  isValidRoomId,
+  isInRoom,
 };

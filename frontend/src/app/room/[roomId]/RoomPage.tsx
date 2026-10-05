@@ -5,12 +5,11 @@ import type {
   GameEnd,
   GameRound,
   Message,
-  ScoreBoard,
+  PlayerScore,
 } from "../../../types/types";
 import { useNewMessageSocket } from "../../../hooks/useNewMessageSocket";
 import { socket } from "../../../socket";
 import { StartGameButton } from "../../../components/buttons/StartGameButton";
-import { LeaveRoomButton } from "../../../components/buttons/LeaveRoomButton";
 import GameOverScreen from "../../../components/GameOverScreen";
 import RoomNotFoundModal from "../../../components/RoomNotFound";
 import InfiniteLooper from "../../../components/InfiniteLooper";
@@ -22,7 +21,7 @@ export default function RoomPage() {
   const [error, setError] = useState<string>("");
   const [roomNotFound, setRoomNotFound] = useState(false);
   const [round, setRound] = useState<GameRound | null>(null);
-  const [scores, setScores] = useState<ScoreBoard>({});
+  const [scores, setScores] = useState<PlayerScore[]>([]);
   const [lastWinnerMessage, setLastWinnerMessage] = useState<string>("");
   const [gameEnd, setGameEnd] = useState<GameEnd | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -32,11 +31,24 @@ export default function RoomPage() {
   };
 
   useEffect(() => {
-    if (roomId) {
-      setRoomNotFound(false);
-      setError("");
+    if (!roomId) return;
+    setRoomNotFound(false);
+    setError("");
+
+    const joinRoom = () => {
+      socket.emit("set-username", {
+        username: sessionStorage.getItem("username")?.trim() || "Anonymous",
+      });
       socket.emit("join-room", roomId);
-    }
+    };
+
+    // Reconnects get a new socket id, so the room has to be rejoined
+    if (socket.connected) joinRoom();
+    socket.on("connect", joinRoom);
+    return () => {
+      socket.off("connect", joinRoom);
+      socket.emit("leave-room", roomId);
+    };
   }, [roomId]);
 
   useEffect(() => {
@@ -46,13 +58,15 @@ export default function RoomPage() {
     });
     socket.on("game-started", (payload: GameRound) => {
       setRound(payload);
-      setScores(payload.scores || {});
+      setScores(payload.scores);
       setLastWinnerMessage("");
       setGameEnd(null);
+      setError("");
     });
     socket.on("game-next-round", (payload: GameRound) => {
       setRound(payload);
-      setScores(payload.scores || {});
+      setScores(payload.scores);
+      setError("");
     });
     socket.on(
       "game-correct-guess",
@@ -60,20 +74,12 @@ export default function RoomPage() {
         setLastWinnerMessage(`${winner} GUESSED IT! ANSWER: ${answer}`);
       },
     );
-    socket.on("skipped-round", (payload: GameRound & { answer?: string }) => {
-      setLastWinnerMessage(
-        payload.answer
-          ? `TIME OUT! ANSWER: ${payload.answer}`
-          : "NOBODY GUESSED IN TIME...",
-      );
-      if (payload.round) {
-        setRound(payload);
-        setScores(payload.scores || {});
-      }
+    socket.on("skipped-round", ({ answer }: { answer: string }) => {
+      setLastWinnerMessage(`TIME OUT! ANSWER: ${answer}`);
     });
     socket.on("game-end", (result: GameEnd) => {
       setGameEnd(result);
-      setScores(result.scores || {});
+      setScores(result.scores);
       audioRef?.current?.pause();
     });
     return () => {
@@ -99,7 +105,7 @@ export default function RoomPage() {
           onPlayAgain={() => {
             setGameEnd(null);
             setRound(null);
-            setScores({});
+            setScores([]);
             setLastWinnerMessage("");
           }}
         />
@@ -147,12 +153,11 @@ export default function RoomPage() {
             {/* Controls */}
             <div className="flex flex-wrap gap-2">
               <StartGameButton roomID={roomId} />
-              {roomId && <LeaveRoomButton socket={socket} roomID={roomId} />}
               <button
                 onClick={() => navigate("/play-with-friends")}
-                className="btn btn-yellow text-sm"
+                className="btn btn-red text-sm"
               >
-                ← BACK
+                ✕ LEAVE
               </button>
             </div>
 
@@ -177,7 +182,7 @@ export default function RoomPage() {
                   <p>
                     YEAR:{" "}
                     <span className="glow-magenta">
-                      {new Date(round.releaseDate).getFullYear()}
+                      {round.releaseDate?.slice(0, 4) ?? "?"}
                     </span>
                   </p>
                 </div>
@@ -200,34 +205,32 @@ export default function RoomPage() {
             )}
 
             {/* Scoreboard */}
-            {Object.keys(scores).length > 0 && (
+            {scores.length > 0 && (
               <div className="pixel-box p-4">
                 <div className="pixel-rule-rainbow mb-3" />
                 <p className="font-display text-sm glow-yellow mb-3 tracking-widest">
                   HI-SCORE TABLE
                 </p>
                 <ul className="flex flex-col gap-1.5">
-                  {Object.entries(scores)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([player, score], i) => (
-                      <li
-                        key={player}
-                        className={`flex justify-between items-center px-3 py-2 font-display text-sm ${
-                          i === 0
-                            ? "score-row-top glow-yellow"
-                            : i === 1
-                              ? "score-row-2 glow-cyan"
-                              : i === 2
-                                ? "score-row-3 glow-magenta"
-                                : "score-row-dim text-yellow-200/40"
-                        }`}
-                      >
-                        <span>
-                          {i + 1}. {player.toUpperCase()}
-                        </span>
-                        <span>{score} PTS</span>
-                      </li>
-                    ))}
+                  {scores.map(({ id, name, score }, i) => (
+                    <li
+                      key={id}
+                      className={`flex justify-between items-center px-3 py-2 font-display text-sm ${
+                        i === 0
+                          ? "score-row-top glow-yellow"
+                          : i === 1
+                            ? "score-row-2 glow-cyan"
+                            : i === 2
+                              ? "score-row-3 glow-magenta"
+                              : "score-row-dim text-yellow-200/40"
+                      }`}
+                    >
+                      <span>
+                        {i + 1}. {name.toUpperCase()}
+                      </span>
+                      <span>{score} PTS</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}

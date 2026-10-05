@@ -1,18 +1,14 @@
 import { useState } from "react";
 import { socket } from "../../socket";
-import { useErrorSocket } from "../../hooks/useErrorSocket";
 import { CreateRoomButton } from "../../components/buttons/CreateRoomButton";
 import { JoinRoomButton } from "../../components/buttons/JoinRoomButton";
 import InfiniteLooper from "../../components/InfiniteLooper";
 
 export default function PlayWithFriendsPage() {
-  const [socketMessage, setSocketMessage] = useState<string>("");
   const [roomID, setRoomID] = useState<string>("");
   const [username, setUsername] = useState<string>(
     sessionStorage.getItem("username") || "",
   );
-
-  useErrorSocket(setSocketMessage);
 
   const handleSetUsername = (userName: string) => {
     setUsername(userName);
@@ -45,12 +41,6 @@ export default function PlayWithFriendsPage() {
             LOBBY
           </h2>
 
-          {socketMessage && (
-            <div className="pixel-box-red p-3 mb-5 font-display text-sm glow-red leading-relaxed">
-              ⚠ ERROR: {socketMessage}
-            </div>
-          )}
-
           <div className="flex flex-col gap-5 mb-6">
             <div>
               <label className="font-display text-sm glow-yellow block mb-2 tracking-widest uppercase">
@@ -59,6 +49,7 @@ export default function PlayWithFriendsPage() {
               <input
                 type="text"
                 placeholder="ENTER NAME_"
+                maxLength={20}
                 value={username}
                 onChange={(e) => handleSetUsername(e.target.value)}
                 className="w-full border-2 border-yellow-400/50 bg-cab-black px-3 py-3 text-yellow-200 tracking-widest placeholder:text-yellow-900/60 transition-all"
@@ -82,7 +73,7 @@ export default function PlayWithFriendsPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <JoinRoomButton socket={socket} roomID={roomID} />
+            <JoinRoomButton roomID={roomID} />
             <CreateRoomButton socket={socket} />
           </div>
 

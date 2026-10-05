@@ -1,149 +1,112 @@
-const { getRandomSong } = require("./spotifyService");
-const songsByRoom = new Map();
+const { getRandomSongs } = require("./songService");
+const games = new Map();
 const MAX_ROUNDS = 10;
 
-const normalizeText = (value = "") =>
-  String(value)
+const normalizeText = (value = "") => {
+  const text = String(value)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[\(\[（［][^)\]）］]*[\)\]）］]|[^\w\s]/g, "")
-    .trim()
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[([（［][^)\]）］]*[)\]）］]/g, "")
+    .replace(/\s+-\s.*$/, "");
+  // Titles with no Latin characters fall back to Unicode letters and digits
+  return text.replace(/[^a-z0-9]/g, "") || text.replace(/[^\p{L}\p{N}]/gu, "");
+};
 
-const buildPublicRound = (song, round) => ({
-  round,
-  previewUrl: song.song_preview_url,
-  artistName: song.artist_name,
-  primaryGenreName: song.genre_name,
-  releaseDate: song.released_on,
-});
+const currentSong = (game) => game.songs[game.round - 1];
 
-/**
- * Determines the winner from the scores object.
- */
-const computeGameResult = (scores) => {
-  const entries = Object.entries(scores);
-  if (entries.length === 0)
-    return { winner: null, scores, isTie: true, topScore: 0 };
+const publicScores = (game) =>
+  [...game.scores.values()].sort((a, b) => b.score - a.score);
 
-  const sorted = entries.sort(([, a], [, b]) => b - a);
-  const topScore = sorted[0][1];
-  const topPlayers = sorted.filter(([, s]) => s === topScore);
-  const isTie = topPlayers.length > 1;
+const buildPublicRound = (game) => {
+  const song = currentSong(game);
+  return {
+    round: game.round,
+    previewUrl: song.song_preview_url,
+    artistName: song.artist_name,
+    primaryGenreName: song.genre_name,
+    releaseDate: song.released_on,
+    scores: publicScores(game),
+  };
+};
+
+const computeGameResult = (game) => {
+  const scores = publicScores(game);
+  const topScore = scores[0]?.score ?? 0;
+  const topPlayers = scores.filter((p) => p.score === topScore);
 
   return {
-    winner: isTie ? null : sorted[0][0],
+    winner: topPlayers.length === 1 ? topPlayers[0].name : null,
     scores,
-    isTie,
+    isTie: topPlayers.length > 1,
     topScore,
   };
 };
 
+const isGameRunning = (roomId) =>
+  ["loading", "active"].includes(games.get(roomId)?.status);
+
 const startRoomGame = async (roomId) => {
-  const song = await getRandomSong();
+  const game = { status: "loading", round: 1, songs: [], scores: new Map() };
+  games.set(roomId, game);
 
-  const initialState = {
-    isActive: true,
-    round: 1,
-    song,
-    normalizedAnswer: normalizeText(song.song_name),
-    scores: {},
-  };
+  try {
+    game.songs = await getRandomSongs(MAX_ROUNDS);
+  } catch (error) {
+    if (games.get(roomId) === game) games.delete(roomId);
+    throw error;
+  }
 
-  songsByRoom.set(roomId, initialState);
+  // Room was destroyed while songs were loading
+  if (games.get(roomId) !== game) return null;
 
-  return {
-    ...buildPublicRound(song, initialState.round),
-    scores: initialState.scores,
-  };
+  game.status = "active";
+  return buildPublicRound(game);
 };
 
-const getRoomGame = (roomId) => songsByRoom.get(roomId);
-
-const submitGuess = async ({ roomId, userId, userName, guess }) => {
-  const game = songsByRoom.get(roomId);
-  if (!game?.isActive) return { status: "inactive" };
-
-  if (normalizeText(guess) !== game.normalizedAnswer) {
-    return { status: "incorrect" };
+const advanceRound = (game) => {
+  if (game.round >= game.songs.length) {
+    game.status = "over";
+    return { gameOver: true, result: computeGameResult(game) };
   }
 
-  const scorerName = userName || userId;
-  game.scores[scorerName] = (game.scores[scorerName] || 0) + 1;
-
-  const correctTrackName = game.song.song_name;
-
-  // Check if this was the last round
-  if (game.round >= MAX_ROUNDS) {
-    game.isActive = false;
-    return {
-      status: "correct",
-      winner: scorerName,
-      answer: correctTrackName,
-      gameOver: true,
-      result: computeGameResult(game.scores),
-    };
-  }
-
-  const nextSong = await getRandomSong();
-  game.song = nextSong;
   game.round += 1;
-  game.normalizedAnswer = normalizeText(nextSong.song_name);
+  return { gameOver: false, nextRound: buildPublicRound(game) };
+};
 
-  return {
-    status: "correct",
-    winner: scorerName,
-    answer: correctTrackName,
-    gameOver: false,
-    nextRound: {
-      ...buildPublicRound(nextSong, game.round),
-      scores: game.scores,
-    },
-  };
+const submitGuess = ({ roomId, userId, userName, guess }) => {
+  const game = games.get(roomId);
+  if (game?.status !== "active") return null;
+
+  const answer = currentSong(game).song_name;
+  const normalizedGuess = normalizeText(guess);
+  if (!normalizedGuess || normalizedGuess !== normalizeText(answer)) return null;
+
+  const player = game.scores.get(userId) ?? { id: userId, score: 0 };
+  player.name = userName;
+  player.score += 1;
+  game.scores.set(userId, player);
+
+  return { winner: userName, answer, ...advanceRound(game) };
 };
 
 /**
  * Skips the current round without awarding any points.
  */
-const skipRound = async (roomId) => {
-  const game = songsByRoom.get(roomId);
-  if (!game?.isActive) return null;
+const skipRound = (roomId) => {
+  const game = games.get(roomId);
+  if (game?.status !== "active") return null;
 
-  const skippedSongName = game.song.song_name;
-
-  // Check if this was the last round
-  if (game.round >= MAX_ROUNDS) {
-    game.isActive = false;
-    return {
-      answer: skippedSongName,
-      gameOver: true,
-      result: computeGameResult(game.scores),
-    };
-  }
-
-  const nextSong = await getRandomSong();
-  game.song = nextSong;
-  game.round += 1;
-  game.normalizedAnswer = normalizeText(nextSong.song_name);
-  console.log(`Round skipped. Answer was: ${skippedSongName}`);
-
-  return {
-    answer: skippedSongName,
-    gameOver: false,
-    nextRound: {
-      ...buildPublicRound(nextSong, game.round),
-      scores: game.scores,
-    },
-  };
+  return { answer: currentSong(game).song_name, ...advanceRound(game) };
 };
 
 const destroyRoomGame = (roomId) => {
-  songsByRoom.delete(roomId);
+  games.delete(roomId);
 };
 
 module.exports = {
-  getRoomGame,
+  normalizeText,
+  isGameRunning,
   startRoomGame,
   submitGuess,
   skipRound,
