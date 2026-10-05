@@ -1,5 +1,12 @@
+require("dotenv").config();
 const { setTimeout } = require("node:timers/promises");
-const supabase = require("./config/db");
+const { createClient } = require("@supabase/supabase-js");
+
+// Writes need the secret key: RLS only allows public reads
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SECRET_KEY,
+);
 
 const songList = require("./data/data").anotherListOfTopSongs;
 
@@ -35,6 +42,7 @@ const populateDatabaseWithSongs = async () => {
         trackName,
         previewUrl,
         artworkUrl30,
+        artworkUrl60,
         artworkUrl100,
         artistId,
         artistName,
@@ -47,7 +55,8 @@ const populateDatabaseWithSongs = async () => {
         song_id: trackId,
         song_name: trackName,
         song_preview_url: previewUrl,
-        song_artwork_url_60: artworkUrl30,
+        song_artwork_url_30: artworkUrl30,
+        song_artwork_url_60: artworkUrl60,
         song_artwork_url_100: artworkUrl100,
         artist_id: artistId,
         genre_name: primaryGenreName,
@@ -60,8 +69,13 @@ const populateDatabaseWithSongs = async () => {
         artist_view_url: artistViewUrl,
       };
 
-      await supabase.from("artists").upsert(artistInfo);
-      await supabase.from("songs").upsert(songInfo);
+      const { error: artistError } = await supabase
+        .from("artists")
+        .upsert(artistInfo);
+      if (artistError) throw artistError;
+
+      const { error: songError } = await supabase.from("songs").upsert(songInfo);
+      if (songError) throw songError;
 
       console.log(`Inserted ${trackName} by ${artistName}`);
     } catch (e) {
