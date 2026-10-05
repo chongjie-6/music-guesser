@@ -1,14 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ChatMessages from "../../../components/chatComponents/ChatMessagesList";
-import type {
-  GameEnd,
-  GameRound,
-  Message,
-  PlayerScore,
-} from "../../../types/types";
+import type { Message } from "../../../types/types";
 import { useNewMessageSocket } from "../../../hooks/useNewMessageSocket";
-import { socket } from "../../../socket";
+import { useJoinRoom } from "../../../hooks/useJoinRoom";
+import { useGameEvents } from "../../../hooks/useGameEvents";
 import { StartGameButton } from "../../../components/buttons/StartGameButton";
 import GameOverScreen from "../../../components/GameOverScreen";
 import RoomNotFoundModal from "../../../components/RoomNotFound";
@@ -19,81 +15,23 @@ export default function RoomPage() {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [error, setError] = useState<string>("");
-  const [roomNotFound, setRoomNotFound] = useState(false);
-  const [round, setRound] = useState<GameRound | null>(null);
-  const [scores, setScores] = useState<PlayerScore[]>([]);
-  const [lastWinnerMessage, setLastWinnerMessage] = useState<string>("");
-  const [gameEnd, setGameEnd] = useState<GameEnd | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const {
+    error,
+    roomNotFound,
+    round,
+    scores,
+    lastWinnerMessage,
+    gameEnd,
+    resetGame,
+  } = useGameEvents(roomId, audioRef);
+
+  useJoinRoom(roomId);
+  useNewMessageSocket(setMessages);
 
   const copyToClipboard = (roomId: string | undefined) => {
     if (roomId) navigator.clipboard.writeText(roomId);
   };
-
-  useEffect(() => {
-    if (!roomId) return;
-    setRoomNotFound(false);
-    setError("");
-
-    const joinRoom = () => {
-      socket.emit("set-username", {
-        username: sessionStorage.getItem("username")?.trim() || "Anonymous",
-      });
-      socket.emit("join-room", roomId);
-    };
-
-    // Reconnects get a new socket id, so the room has to be rejoined
-    if (socket.connected) joinRoom();
-    socket.on("connect", joinRoom);
-    return () => {
-      socket.off("connect", joinRoom);
-      socket.emit("leave-room", roomId);
-    };
-  }, [roomId]);
-
-  useEffect(() => {
-    socket.on("error", (message: string) => {
-      if (message === "Room does not exist") setRoomNotFound(true);
-      else setError(message);
-    });
-    socket.on("game-started", (payload: GameRound) => {
-      setRound(payload);
-      setScores(payload.scores);
-      setLastWinnerMessage("");
-      setGameEnd(null);
-      setError("");
-    });
-    socket.on("game-next-round", (payload: GameRound) => {
-      setRound(payload);
-      setScores(payload.scores);
-      setError("");
-    });
-    socket.on(
-      "game-correct-guess",
-      ({ winner, answer }: { winner: string; answer: string }) => {
-        setLastWinnerMessage(`${winner} GUESSED IT! ANSWER: ${answer}`);
-      },
-    );
-    socket.on("skipped-round", ({ answer }: { answer: string }) => {
-      setLastWinnerMessage(`TIME OUT! ANSWER: ${answer}`);
-    });
-    socket.on("game-end", (result: GameEnd) => {
-      setGameEnd(result);
-      setScores(result.scores);
-      audioRef?.current?.pause();
-    });
-    return () => {
-      socket.off("error");
-      socket.off("game-started");
-      socket.off("game-next-round");
-      socket.off("game-correct-guess");
-      socket.off("game-end");
-      socket.off("skipped-round");
-    };
-  }, []);
-
-  useNewMessageSocket(setMessages);
 
   return (
     <>
@@ -103,12 +41,7 @@ export default function RoomPage() {
       {gameEnd && (
         <GameOverScreen
           result={gameEnd}
-          onPlayAgain={() => {
-            setGameEnd(null);
-            setRound(null);
-            setScores([]);
-            setLastWinnerMessage("");
-          }}
+          onPlayAgain={resetGame}
         />
       )}
 
