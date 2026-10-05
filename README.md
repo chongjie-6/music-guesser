@@ -23,7 +23,7 @@ A real-time multiplayer music guessing game. Players join a shared room, listen 
 ### Backend
 - **Node.js + Express 5** — HTTP server and middleware
 - **Socket.io** — WebSocket server handling all real-time events
-- **Supabase** — PostgreSQL database accessed via a `get_random_song()` RPC function
+- **Supabase** — PostgreSQL database accessed via a `get_random_songs()` RPC function
 - **express-rate-limit** — rate limiting (50 req/min per IP)
 
 ### Frontend
@@ -33,7 +33,6 @@ A real-time multiplayer music guessing game. Players join a shared room, listen 
 - **Socket.io-client** — connects to the backend over WebSockets
 - **TailwindCSS 4**
 - **React Router 7**
-- **TanStack React Query**
 
 ### Infrastructure
 - **Docker** — multi-stage build: compiles the React frontend then bundles it with the Node backend into a single image
@@ -57,13 +56,13 @@ Server (Express + Socket.io)
     │
     ▼
 Supabase (PostgreSQL)
-    └── get_random_song() RPC
+    └── get_random_songs() RPC
 ```
 
 ### Game loop
 
-1. A player emits `start-game` → server fetches a random song from Supabase and emits `game-started` to the room
-2. A 20-second timer starts on the server; if it fires, the round is skipped and the next song is loaded
+1. A player emits `start-game` → server fetches 10 distinct random songs from Supabase and emits `game-started` to the room
+2. A 20-second timer starts on the server; if it fires, the round is skipped and the next song is played
 3. Players type guesses as chat messages via `send-message`
 4. The server normalises the guess (lowercase, diacritics stripped, punctuation removed) and compares it to the normalised song title
 5. On a correct guess: the timer is cleared, 1 point is awarded, and `game-correct-guess` + the next round data are emitted to the room
@@ -75,17 +74,18 @@ Rooms exist purely in Socket.io's adapter (no database). When the last player le
 
 ### Text normalisation
 
-Guesses are normalised before comparison to handle accented characters, featured artist annotations, and punctuation differences:
+Guesses are normalised before comparison to handle accented characters, featured artist annotations, version suffixes, and punctuation differences:
 
 ```js
-const normalizeText = (value = "") =>
-  String(value)
+const normalizeText = (value = "") => {
+  const text = String(value)
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")          // strip diacritics
-    .replace(/[\(\[（［][^)\]）］]*[\)\]）］]|[^\w\s]/g, "") // remove bracketed text + punctuation
-    .trim()
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")           // strip diacritics
+    .replace(/[([（［][^)\]）］]*[)\]）］]/g, "") // remove bracketed text
+    .replace(/\s+-\s.*$/, "");                 // remove " - Remastered 2011" style suffixes
+  return text.replace(/[^a-z0-9]/g, "") || text.replace(/[^\p{L}\p{N}]/gu, "");
+};
 ```
 
 ---
@@ -137,9 +137,13 @@ Requires a `backend/.env` with:
 
 ```
 SUPABASE_URL=...
-SUPABASE_ANON_KEY=...
+SUPABASE_PUBLISHABLE_DEFAULT_KEY=...
 PORT=3500
+# Only needed for populateDatabaseWithSongs.js
+SUPABASE_SECRET_KEY=...
 ```
+
+Apply database migrations with `supabase db push` from `backend/`. Run backend tests with `npm test` from `backend/`.
 
 ---
 
@@ -153,7 +157,7 @@ PORT=3500
 │   ├── sockets/
 │   │   ├── index.js
 │   │   └── handlers/    # gameHandler, roomHandler, messageHandler, userHandler
-│   └── service/         # gameService, roomService, spotifyService, songService
+│   └── service/         # gameService, roomService, songService
 ├── frontend/
 │   └── src/
 │       ├── app/         # Page components (Home, PlayWithFriends, Room)
