@@ -32,8 +32,14 @@ export default function RoomPage() {
   useJoinRoom(roomId);
   useNewMessageSocket(setMessages);
 
+  const [copied, setCopied] = useState(false);
+
   const copyToClipboard = (roomId: string | undefined) => {
-    if (roomId) navigator.clipboard.writeText(roomId);
+    if (!roomId) return;
+    navigator.clipboard?.writeText(roomId).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
   };
 
   return (
@@ -81,8 +87,9 @@ export default function RoomPage() {
                 <button
                   onClick={() => copyToClipboard(roomId)}
                   className="btn btn-cyan text-xs"
+                  aria-live="polite"
                 >
-                  Copy
+                  {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
             </div>
