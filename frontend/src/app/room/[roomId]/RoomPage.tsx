@@ -11,6 +11,7 @@ import RoomNotFoundModal from "../../../components/RoomNotFound";
 import InfiniteLooper from "../../../components/InfiniteLooper";
 import MusicPlayer from "../../../components/MusicPlayer";
 import Countdown from "../../../components/Countdown";
+import Star from "../../../components/Star";
 
 export default function RoomPage() {
   const { roomId } = useParams();
@@ -57,11 +58,16 @@ export default function RoomPage() {
       <main className="relative min-h-screen bg-pixel-grid overflow-hidden">
         {/* Top marquee */}
         <div className="marquee-wrap marquee-fast sticky top-0 z-10">
-          <InfiniteLooper speed={18} direction={"left"}>
-            {" "}
-            ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE
-            DROP&nbsp;{" "}
-          </InfiniteLooper>
+          <InfiniteLooper
+            speed={18}
+            direction={"left"}
+            items={[
+              "BEAT THE DROP",
+              "ROUND IN PROGRESS",
+              "GUESS THE TRACK",
+              "BEAT THE DROP",
+            ]}
+          />
         </div>
 
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-4 pb-24 lg:pb-4 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -151,7 +157,8 @@ export default function RoomPage() {
             {/* Winner flash */}
             {lastWinnerMessage && (
               <div className="pixel-box-magenta p-3 font-display text-sm glow-magenta leading-relaxed blink">
-                ★ {lastWinnerMessage}
+                <Star className="inline align-[0.09em] drop-shadow-[0_0_6px_rgba(255,0,204,0.9)]" />{" "}
+                {lastWinnerMessage}
               </div>
             )}
 

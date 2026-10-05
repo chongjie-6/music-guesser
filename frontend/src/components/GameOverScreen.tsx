@@ -27,9 +27,11 @@ export default function GameOverScreen({
       <div className="relative w-full max-w-md m-auto">
         {/* Top marquee */}
         <div className="marquee-wrap mb-4">
-          <InfiniteLooper speed={12} direction={"left"}>
-            ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER&nbsp;
-          </InfiniteLooper>
+          <InfiniteLooper
+            speed={12}
+            direction={"left"}
+            items={["GAME OVER", "GAME OVER", "GAME OVER", "GAME OVER"]}
+          />
         </div>
 
         <div className="pixel-box p-5 sm:p-8">

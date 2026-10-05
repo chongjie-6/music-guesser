@@ -433,9 +433,11 @@ input:focus {
 
 .looper__listInstance {
   display: flex;
+  align-items: center;
+  gap: 1em;
   width: max-content;
   font-family: var(--font-display);
   color: var(--color-cab-black);
   letter-spacing: 0.15em;
-  padding: 7px 0;
+  padding: 7px 1em 7px 0;
 }

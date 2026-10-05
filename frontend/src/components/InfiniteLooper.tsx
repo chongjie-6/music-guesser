@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import Star from "./Star";
 
 export default function InfiniteLooper({
   speed,
   direction,
-  children,
+  items,
 }: {
   speed: number;
   direction: "right" | "left";
-  children: React.ReactNode;
+  items: string[];
 }) {
   const [looperInstances, setLooperInstances] = useState(1);
   const outerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +67,12 @@ export default function InfiniteLooper({
               animationDirection: direction === "right" ? "reverse" : "normal",
             }}
           >
-            {children}
+            {items.map((item, i) => (
+              <Fragment key={i}>
+                <Star />
+                {item}
+              </Fragment>
+            ))}
           </div>
         ))}
       </div>
