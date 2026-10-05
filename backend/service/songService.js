@@ -1,15 +1,13 @@
-const supabase = require("../config/db");
+const pool = require("../config/db");
 
 const getRandomSongs = async (count) => {
-  const { data, error } = await supabase.rpc("get_random_songs", {
-    song_count: count,
-  });
+  const { rows } = await pool.query("SELECT * FROM get_random_songs($1)", [count]);
 
-  if (error || !data?.length) {
-    throw new Error(`Failed to get random songs: ${error?.message}`);
+  if (!rows.length) {
+    throw new Error("Failed to get random songs: no songs in the database");
   }
 
-  return data;
+  return rows;
 };
 
 module.exports = { getRandomSongs };

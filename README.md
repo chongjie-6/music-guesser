@@ -23,7 +23,7 @@ A real-time multiplayer music guessing game. Players join a shared room, listen 
 ### Backend
 - **Node.js + Express 5** — HTTP server and middleware
 - **Socket.io** — WebSocket server handling all real-time events
-- **Supabase** — PostgreSQL database accessed via a `get_random_songs()` RPC function
+- **Neon** — serverless PostgreSQL, queried with `pg` through a `get_random_songs()` SQL function
 - **express-rate-limit** — rate limiting (50 req/min per IP)
 
 ### Frontend
@@ -55,13 +55,13 @@ Server (Express + Socket.io)
     └── userHandler    — username management
     │
     ▼
-Supabase (PostgreSQL)
-    └── get_random_songs() RPC
+Neon (PostgreSQL)
+    └── get_random_songs() function
 ```
 
 ### Game loop
 
-1. A player emits `start-game` → server fetches 10 distinct random songs from Supabase and emits `game-started` to the room
+1. A player emits `start-game` → server fetches 10 distinct random songs from Neon and emits `game-started` to the room
 2. A 20-second timer starts on the server; if it fires, the round is skipped and the next song is played
 3. Players type guesses as chat messages via `send-message`
 4. The server normalises the guess (lowercase, diacritics stripped, punctuation removed) and compares it to the normalised song title
@@ -101,7 +101,7 @@ const normalizeText = (value = "") => {
 | **Containerisation** | Multi-stage Dockerfile: stage 1 builds the Vite frontend, stage 2 runs the Node server with the compiled assets baked in |
 | **TypeScript** | Typed socket events, component props, and shared game types across the frontend |
 | **React 19** | Enabled the experimental React Compiler; custom hooks to encapsulate socket event listeners |
-| **Database integration** | Supabase PostgreSQL with a server-side RPC function for random song selection |
+| **Database integration** | Neon PostgreSQL with a server-side SQL function for random song selection, read through a read-only role |
 | **Security basics** | Rate limiting, CORS allowlist, `.env` for secrets, non-root Docker user |
 | **Text processing** | Unicode normalisation + regex pipeline to make guessing forgiving of accents and punctuation |
 
@@ -136,14 +136,14 @@ cd ../backend && npm install && npm start
 Requires a `backend/.env` with:
 
 ```
-SUPABASE_URL=...
-SUPABASE_PUBLISHABLE_DEFAULT_KEY=...
+# Neon connection string for the read-only game_reader role
+DATABASE_URL=...
 PORT=3500
-# Only needed for populateDatabaseWithSongs.js
-SUPABASE_SECRET_KEY=...
+# Only needed for populateDatabaseWithSongs.js (neondb_owner connection string)
+DATABASE_OWNER_URL=...
 ```
 
-Apply database migrations with `supabase db push` from `backend/`. Run backend tests with `npm test` from `backend/`.
+Apply new files in `backend/migrations/` in order, as the owner role, with `psql "$DATABASE_OWNER_URL" -f <file>` or the Neon SQL Editor. Then give `game_reader` a password with `ALTER ROLE game_reader PASSWORD '...'`. Run backend tests with `npm test` from `backend/`.
 
 ---
 
@@ -152,7 +152,7 @@ Apply database migrations with `supabase db push` from `backend/`. Run backend t
 ```
 ├── backend/
 │   ├── server.js
-│   ├── config/          # CORS options, Supabase client
+│   ├── config/          # CORS options, Postgres pool
 │   ├── middleware/      # Rate limiter
 │   ├── sockets/
 │   │   ├── index.js

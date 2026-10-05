@@ -1,12 +1,9 @@
 require("dotenv").config();
 const { setTimeout } = require("node:timers/promises");
-const { createClient } = require("@supabase/supabase-js");
+const { Pool } = require("pg");
 
-// Writes need the secret key: RLS only allows public reads
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SECRET_KEY,
-);
+// Writes need the owner role: the game server's role is read-only
+const pool = new Pool({ connectionString: process.env.DATABASE_OWNER_URL });
 
 const songList = require("./data/data").anotherListOfTopSongs;
 
@@ -51,31 +48,40 @@ const populateDatabaseWithSongs = async () => {
         releaseDate,
       } = await getSong(song);
 
-      const songInfo = {
-        song_id: trackId,
-        song_name: trackName,
-        song_preview_url: previewUrl,
-        song_artwork_url_30: artworkUrl30,
-        song_artwork_url_60: artworkUrl60,
-        song_artwork_url_100: artworkUrl100,
-        artist_id: artistId,
-        genre_name: primaryGenreName,
-        released_on: releaseDate,
-      };
+      await pool.query(
+        `INSERT INTO artists (artist_id, artist_name, artist_view_url)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (artist_id) DO UPDATE SET
+           artist_name = EXCLUDED.artist_name,
+           artist_view_url = EXCLUDED.artist_view_url`,
+        [artistId, artistName, artistViewUrl],
+      );
 
-      const artistInfo = {
-        artist_id: artistId,
-        artist_name: artistName,
-        artist_view_url: artistViewUrl,
-      };
-
-      const { error: artistError } = await supabase
-        .from("artists")
-        .upsert(artistInfo);
-      if (artistError) throw artistError;
-
-      const { error: songError } = await supabase.from("songs").upsert(songInfo);
-      if (songError) throw songError;
+      await pool.query(
+        `INSERT INTO songs (song_id, song_name, song_preview_url, song_artwork_url_30,
+           song_artwork_url_60, song_artwork_url_100, artist_id, genre_name, released_on)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (song_id) DO UPDATE SET
+           song_name = EXCLUDED.song_name,
+           song_preview_url = EXCLUDED.song_preview_url,
+           song_artwork_url_30 = EXCLUDED.song_artwork_url_30,
+           song_artwork_url_60 = EXCLUDED.song_artwork_url_60,
+           song_artwork_url_100 = EXCLUDED.song_artwork_url_100,
+           artist_id = EXCLUDED.artist_id,
+           genre_name = EXCLUDED.genre_name,
+           released_on = EXCLUDED.released_on`,
+        [
+          trackId,
+          trackName,
+          previewUrl,
+          artworkUrl30,
+          artworkUrl60,
+          artworkUrl100,
+          artistId,
+          primaryGenreName,
+          releaseDate,
+        ],
+      );
 
       console.log(`Inserted ${trackName} by ${artistName}`);
     } catch (e) {
@@ -87,6 +93,7 @@ const populateDatabaseWithSongs = async () => {
   }
 
   console.log("Done inserting all songs.");
+  await pool.end();
 };
 
 populateDatabaseWithSongs();
