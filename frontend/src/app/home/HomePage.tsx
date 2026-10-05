@@ -6,7 +6,7 @@ export default function HomePage() {
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-pixel-grid px-4 py-10">
       {/* Cabinet marquee strip */}
       <div className="absolute top-0 left-0 right-0 marquee-wrap">
-        <InfiniteLooper speed={6} direction={"left"}>
+        <InfiniteLooper speed={18} direction={"left"}>
           {" "}
           ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE DROP
           &nbsp;{" "}

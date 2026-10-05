@@ -115,7 +115,7 @@ export default function RoomPage() {
       <main className="relative min-h-screen bg-pixel-grid overflow-hidden">
         {/* Top marquee */}
         <div className="marquee-wrap marquee-fast sticky top-0 z-10">
-          <InfiniteLooper speed={6} direction={"left"}>
+          <InfiniteLooper speed={18} direction={"left"}>
             {" "}
             ★ BEAT THE DROP ★ ROUND IN PROGRESS ★ GUESS THE TRACK ★ BEAT THE
             DROP&nbsp;{" "}

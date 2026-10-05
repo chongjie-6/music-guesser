@@ -27,7 +27,7 @@ export default function GameOverScreen({
       <div className="relative w-full max-w-md mx-4">
         {/* Top marquee */}
         <div className="marquee-wrap mb-4">
-          <InfiniteLooper speed={6} direction={"left"}>
+          <InfiniteLooper speed={12} direction={"left"}>
             ★ GAME OVER ★ GAME OVER ★ GAME OVER ★ GAME OVER&nbsp;
           </InfiniteLooper>
         </div>

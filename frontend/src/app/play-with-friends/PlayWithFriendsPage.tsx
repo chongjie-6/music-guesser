@@ -24,7 +24,7 @@ export default function PlayWithFriendsPage() {
       <div className="w-full max-w-lg">
         {/* Marquee header */}
         <div className="marquee-wrap mb-4">
-          <InfiniteLooper speed={8} direction={"left"}>
+          <InfiniteLooper speed={20} direction={"left"}>
             {" "}
             ★ BEAT THE DROP ★ MUSIC GUESSER ★ INSERT COIN ★ BEAT THE DROP ★
             MUSIC GUESSER ★ INSERT COIN&nbsp;
