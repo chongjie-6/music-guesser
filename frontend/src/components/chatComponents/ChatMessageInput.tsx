@@ -15,7 +15,10 @@ export default function ChatMessageInput({
   };
 
   return (
-    <form className="flex gap-2" onSubmit={onSubmit}>
+    <form
+      className="fixed inset-x-0 bottom-0 z-20 flex gap-2 border-t-2 border-yellow-400/40 bg-cab-dark p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0"
+      onSubmit={onSubmit}
+    >
       <input
         name="message"
         placeholder="TYPE YOUR GUESS_"

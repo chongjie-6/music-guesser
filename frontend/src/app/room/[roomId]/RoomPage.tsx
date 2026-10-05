@@ -55,7 +55,7 @@ export default function RoomPage() {
           </InfiniteLooper>
         </div>
 
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-4 pb-24 lg:pb-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           {/* Chat panel */}
           <div>
             {error && (
@@ -67,7 +67,7 @@ export default function RoomPage() {
           </div>
 
           {/* Sidebar */}
-          <aside className="flex flex-col gap-3">
+          <aside className="order-first flex flex-col gap-3 lg:order-0">
             {/* Room ID */}
             <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
               <p className="font-display text-sm text-yellow-600/60 uppercase tracking-widest mb-1">
