@@ -13,6 +13,7 @@ import { StartGameButton } from "../../../components/buttons/StartGameButton";
 import GameOverScreen from "../../../components/GameOverScreen";
 import RoomNotFoundModal from "../../../components/RoomNotFound";
 import InfiniteLooper from "../../../components/InfiniteLooper";
+import MusicPlayer from "../../../components/MusicPlayer";
 
 export default function RoomPage() {
   const { roomId } = useParams();
@@ -186,13 +187,7 @@ export default function RoomPage() {
                     </span>
                   </p>
                 </div>
-                <audio
-                  ref={audioRef}
-                  controls
-                  src={round.previewUrl}
-                  className="mt-3 w-full"
-                  autoPlay
-                />
+                <MusicPlayer src={round.previewUrl} audioRef={audioRef} />
                 <div className="pixel-rule-cyan mt-3" />
               </div>
             )}

@@ -86,8 +86,35 @@ input:focus {
     0 0 20px rgba(245, 230, 66, 0.2) !important;
 }
 
-audio {
-  filter: sepia(1) hue-rotate(20deg) saturate(4) brightness(0.9);
+/* ── Pixel range slider (fill width comes from --fill) ── */
+.pixel-range {
+  appearance: none;
+  height: 10px;
+  margin: 0;
+  cursor: pointer;
+  background: linear-gradient(
+    90deg,
+    currentColor var(--fill, 0%),
+    rgba(240, 240, 255, 0.12) var(--fill, 0%)
+  );
+}
+.pixel-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 8px;
+  height: 18px;
+  background: var(--color-arcade-white);
+  box-shadow: 2px 2px 0 currentColor;
+}
+.pixel-range::-moz-range-thumb {
+  width: 8px;
+  height: 18px;
+  border: 0;
+  border-radius: 0;
+  background: var(--color-arcade-white);
+  box-shadow: 2px 2px 0 currentColor;
+}
+.pixel-range::-moz-range-track {
+  background: transparent;
 }
 
 /* ── Blinking cursor animation ── */
