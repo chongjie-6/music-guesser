@@ -35,10 +35,10 @@ export default function InfiniteLooper({
     const instanceWidth = width / innerRef.current.children.length;
 
     if (width < parentWidth + instanceWidth) {
-      setLooperInstances(looperInstances + Math.ceil(parentWidth / width));
+      setLooperInstances((n) => n + Math.ceil(parentWidth / width));
     }
     resetAnimation();
-  }, [looperInstances]);
+  }, []);
 
   useEffect(() => {
     setupInstances();
