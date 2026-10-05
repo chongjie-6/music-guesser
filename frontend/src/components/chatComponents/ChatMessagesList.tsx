@@ -37,7 +37,7 @@ export default function ChatMessages({
         {messages.map((message, idx) => (
           <div
             key={idx}
-            className="border border-yellow-400/8 bg-yellow-400/2 px-2 py-1.5 font-display text-sm leading-relaxed"
+            className="border border-yellow-400/8 bg-yellow-400/2 px-2 py-1.5 font-display text-sm leading-relaxed wrap-anywhere"
           >
             <span className="glow-magenta">
               {(message.senderName || message.senderId).toUpperCase()}

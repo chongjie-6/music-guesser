@@ -55,7 +55,7 @@ export default function RoomPage() {
           </InfiniteLooper>
         </div>
 
-        <div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[1fr_300px]">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           {/* Chat panel */}
           <div>
             {error && (
@@ -143,7 +143,7 @@ export default function RoomPage() {
                   {scores.map(({ id, name, score }, i) => (
                     <li
                       key={id}
-                      className={`flex justify-between items-center px-3 py-2 font-display text-sm ${
+                      className={`flex justify-between items-center gap-3 px-3 py-2 font-display text-sm ${
                         i === 0
                           ? "score-row-top glow-yellow"
                           : i === 1
@@ -153,10 +153,10 @@ export default function RoomPage() {
                               : "score-row-dim text-yellow-200/40"
                       }`}
                     >
-                      <span>
+                      <span className="wrap-anywhere">
                         {i + 1}. {name.toUpperCase()}
                       </span>
-                      <span>{score} PTS</span>
+                      <span className="shrink-0">{score} PTS</span>
                     </li>
                   ))}
                 </ul>

@@ -18,13 +18,13 @@ export default function GameOverScreen({
   onPlayAgain: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-cab-black/95 bg-pixel-grid">
+    <div className="fixed inset-0 z-50 flex overflow-y-auto p-4 bg-cab-black/95 bg-pixel-grid">
       {/* CRT glow */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+      <div className="pointer-events-none fixed inset-0 flex items-center justify-center">
         <div className="h-[600px] w-[600px] rounded-full bg-yellow-300/5 blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-md mx-4">
+      <div className="relative w-full max-w-md m-auto">
         {/* Top marquee */}
         <div className="marquee-wrap mb-4">
           <InfiniteLooper speed={12} direction={"left"}>
@@ -32,7 +32,7 @@ export default function GameOverScreen({
           </InfiniteLooper>
         </div>
 
-        <div className="pixel-box p-8">
+        <div className="pixel-box p-5 sm:p-8">
           <div className="pixel-rule-rainbow mb-6" />
 
           <p className="font-display text-sm glow-yellow tracking-[.3em] uppercase mb-4">
@@ -41,7 +41,7 @@ export default function GameOverScreen({
 
           {result.isTie ? (
             <>
-              <h2 className="font-display text-2xl glow-cyan uppercase mb-1">
+              <h2 className="font-display text-lg sm:text-2xl glow-cyan uppercase mb-1">
                 IT'S A TIE!
               </h2>
               <p className="font-body text-2xl text-yellow-200/60">
@@ -53,7 +53,7 @@ export default function GameOverScreen({
               <p className="font-display text-sm text-yellow-500/60 tracking-widest mb-2 uppercase">
                 WINNER
               </p>
-              <h2 className="font-display text-2xl text-rainbow uppercase leading-snug mb-1">
+              <h2 className="font-display text-lg sm:text-2xl text-rainbow uppercase leading-snug wrap-anywhere mb-1">
                 {result.winner.toUpperCase()}
               </h2>
               <p className="font-body text-2xl glow-yellow">
@@ -71,12 +71,12 @@ export default function GameOverScreen({
               {result.scores.map(({ id, name, score }, i) => (
                 <div
                   key={id}
-                  className={`flex items-center justify-between px-4 py-2.5 font-display text-sm ${RANK_CLASSES[i] ?? RANK_CLASSES[3]}`}
+                  className={`flex items-center justify-between gap-3 px-3 sm:px-4 py-2.5 font-display text-xs sm:text-sm ${RANK_CLASSES[i] ?? RANK_CLASSES[3]}`}
                 >
-                  <span>
+                  <span className="wrap-anywhere">
                     {RANK_LABELS[i] ?? `${i + 1}.`} {name.toUpperCase()}
                   </span>
-                  <span>{score} PTS</span>
+                  <span className="shrink-0">{score} PTS</span>
                 </div>
               ))}
             </div>

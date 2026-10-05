@@ -19,7 +19,7 @@ export default function ChatMessageInput({
       <input
         name="message"
         placeholder="TYPE YOUR GUESS_"
-        className="flex-1 border-2 border-yellow-400/40 bg-cab-black px-3 py-2.5 text-yellow-200 tracking-wider placeholder:text-yellow-900/50 transition-all"
+        className="min-w-0 flex-1 border-2 border-yellow-400/40 bg-cab-black px-3 py-2.5 text-yellow-200 tracking-wider placeholder:text-yellow-900/50 transition-all"
       />
       <button type="submit" className="btn btn-yellow-fill text-sm px-4">
         SEND
