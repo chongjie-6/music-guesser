@@ -44,7 +44,7 @@ export default function PlayWithFriendsPage() {
           <div className="flex flex-col gap-5 mb-6">
             <div>
               <label className="font-display text-sm glow-yellow block mb-2 tracking-widest uppercase">
-                YOUR CALLSIGN
+                PLAYER NAME
               </label>
               <input
                 type="text"
