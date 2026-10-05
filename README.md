@@ -11,7 +11,7 @@ A real-time multiplayer music guessing game. Players join a shared room, listen 
 - **Multiplayer rooms** — create a room with a custom code and share it with friends
 - **Real-time gameplay** — guesses, scores, and round transitions sync instantly across all players
 - **10-round games** — each round plays a different song preview with artist, genre, and release year as hints
-- **Auto-skip timer** — rounds automatically skip after 20 seconds if nobody guesses correctly
+- **Auto-skip timer** — the music stops after 15 seconds, then rounds skip after 5 more seconds if nobody guesses correctly
 - **Live leaderboard** — scores update in real time after each correct guess
 - **In-game chat** — chat doubles as the guess input; correct guesses are detected from chat messages
 - **Tie detection** — gracefully handles shared top scores at game end
@@ -62,7 +62,7 @@ Neon (PostgreSQL)
 ### Game loop
 
 1. A player emits `start-game` → server fetches 10 distinct random songs from Neon and emits `game-started` to the room
-2. A 20-second timer starts on the server; if it fires, the round is skipped and the next song is played
+2. A timer starts on the server: after 15 seconds `game-music-stop` pauses the song for everyone, and after 5 more silent seconds the round is skipped and the next song is played
 3. Players type guesses as chat messages via `send-message`
 4. The server normalises the guess (lowercase, diacritics stripped, punctuation removed) and compares it to the normalised song title
 5. On a correct guess: the timer is cleared, 1 point is awarded, and `game-correct-guess` + the next round data are emitted to the room

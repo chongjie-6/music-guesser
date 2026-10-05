@@ -10,6 +10,7 @@ import GameOverScreen from "../../../components/GameOverScreen";
 import RoomNotFoundModal from "../../../components/RoomNotFound";
 import InfiniteLooper from "../../../components/InfiniteLooper";
 import MusicPlayer from "../../../components/MusicPlayer";
+import Countdown from "../../../components/Countdown";
 
 export default function RoomPage() {
   const { roomId } = useParams();
@@ -23,6 +24,8 @@ export default function RoomPage() {
     scores,
     lastWinnerMessage,
     gameEnd,
+    musicStopped,
+    deadline,
     resetGame,
   } = useGameEvents(roomId, audioRef);
 
@@ -102,6 +105,15 @@ export default function RoomPage() {
                 <p className="font-display text-sm glow-cyan uppercase tracking-widest mb-3">
                   — ROUND {round.round} / 10 —
                 </p>
+                {deadline !== null && (
+                  <p
+                    className={`font-display text-sm mb-3 ${musicStopped ? "glow-red" : "glow-yellow"}`}
+                  >
+                    {musicStopped ? "MUSIC STOPPED · " : "⏱ "}
+                    {/* Remount per deadline so the first render isn't a stale tick */}
+                    <Countdown key={deadline} deadline={deadline} />s LEFT
+                  </p>
+                )}
                 <div className="font-body text-xl space-y-1 text-cyan-200/80">
                   <p>
                     ARTIST:{" "}
@@ -120,7 +132,11 @@ export default function RoomPage() {
                     </span>
                   </p>
                 </div>
-                <MusicPlayer src={round.previewUrl} audioRef={audioRef} />
+                <MusicPlayer
+                  src={round.previewUrl}
+                  audioRef={audioRef}
+                  stopped={musicStopped}
+                />
                 <div className="pixel-rule-cyan mt-3" />
               </div>
             )}

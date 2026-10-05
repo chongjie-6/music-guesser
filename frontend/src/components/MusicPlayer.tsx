@@ -53,9 +53,10 @@ const formatTime = (t: number) =>
 type Props = {
   src: string;
   audioRef: RefObject<HTMLAudioElement | null>;
+  stopped: boolean;
 };
 
-export default function MusicPlayer({ src, audioRef }: Props) {
+export default function MusicPlayer({ src, audioRef, stopped }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const graph = useRef<{ ctx: AudioContext; analyser: AnalyserNode } | null>(
     null,
@@ -166,7 +167,7 @@ export default function MusicPlayer({ src, audioRef }: Props) {
       <div className="mt-3 flex items-center gap-3">
         <button
           onClick={togglePlay}
-          disabled={failed}
+          disabled={failed || stopped}
           aria-label={playing ? "Pause" : "Play"}
           className="btn btn-yellow-fill"
           style={{ padding: 8 }}

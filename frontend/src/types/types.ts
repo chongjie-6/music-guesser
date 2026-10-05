@@ -17,6 +17,7 @@ export type GameRound = {
   primaryGenreName: string;
   releaseDate: string | null;
   scores: PlayerScore[];
+  timeLeftMs: number;
 };
 
 export type GameEnd = {

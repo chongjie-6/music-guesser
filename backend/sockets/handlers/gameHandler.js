@@ -8,7 +8,8 @@ const {
 // Track active timers per room so they can be cleared on correct guess
 const roomTimers = new Map();
 
-const ROUND_TIMEOUT_MS = 20000;
+const MUSIC_MS = 15000;
+const SILENT_GUESS_MS = 5000;
 
 /**
  * Clears any existing skip timer for a room.
@@ -32,17 +33,20 @@ const continueGame = (io, roomId, result) => {
     return;
   }
 
-  io.in(roomId).emit("game-next-round", result.nextRound);
+  io.in(roomId).emit("game-next-round", {
+    ...result.nextRound,
+    timeLeftMs: MUSIC_MS,
+  });
   startRoundTimer(io, roomId);
 };
 
 /**
- * Starts a timer for a room. If nobody guesses in time,
- * skips the round without awarding any points.
+ * Plays the music for a while, then stops it and gives players a little longer
+ * to guess. If nobody does, skips the round without awarding any points.
  */
 const startRoundTimer = (io, roomId) => {
   clearRoomTimer(roomId);
-  const timer = setTimeout(() => {
+  const skip = () => {
     roomTimers.delete(roomId);
     const result = skipRound(roomId);
     if (!result) return;
@@ -50,9 +54,13 @@ const startRoundTimer = (io, roomId) => {
     io.in(roomId).emit("skipped-round", { answer: result.answer });
     console.log(`Round skipped in room ${roomId}. Answer was: ${result.answer}`);
     continueGame(io, roomId, result);
-  }, ROUND_TIMEOUT_MS);
+  };
+  const stopMusic = () => {
+    io.in(roomId).emit("game-music-stop", { timeLeftMs: SILENT_GUESS_MS });
+    roomTimers.set(roomId, setTimeout(skip, SILENT_GUESS_MS));
+  };
 
-  roomTimers.set(roomId, timer);
+  roomTimers.set(roomId, setTimeout(stopMusic, MUSIC_MS));
 };
 
 module.exports = (io, socket) => {
@@ -74,7 +82,10 @@ module.exports = (io, socket) => {
       const roundData = await startRoomGame(roomID);
       if (!roundData) return;
 
-      io.in(roomID).emit("game-started", roundData);
+      io.in(roomID).emit("game-started", {
+        ...roundData,
+        timeLeftMs: MUSIC_MS,
+      });
       console.log(`Game started by: ${socket.id}`);
       startRoundTimer(io, roomID);
     } catch (error) {
