@@ -5,6 +5,7 @@ import {
   type CSSProperties,
   type RefObject,
 } from "react";
+import { useSavedVolume } from "../hooks/useSavedVolume";
 
 const BARS = 20;
 const SEGS = 10;
@@ -62,7 +63,7 @@ export default function MusicPlayer({ src, audioRef }: Props) {
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useSavedVolume(audioRef);
   const [muted, setMuted] = useState(false);
   const [failedSrc, setFailedSrc] = useState("");
   const failed = failedSrc === src;
