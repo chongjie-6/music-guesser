@@ -59,24 +59,44 @@ type Props = {
 
 export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const graph = useRef<{ ctx: AudioContext; analyser: AnalyserNode } | null>(
-    null,
-  );
+  const graph = useRef<{
+    ctx: AudioContext;
+    analyser: AnalyserNode;
+    gain: GainNode;
+  } | null>(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useSavedVolume(audioRef);
+  const [volume, setVolume] = useSavedVolume();
   const [muted, setMuted] = useState(false);
   const [failedSrc, setFailedSrc] = useState("");
+  const [blockedSrc, setBlockedSrc] = useState("");
   const failed = failedSrc === src;
+  const blocked = blockedSrc === src && !stopped && !failed;
+  const shownVolume = muted ? 0 : volume;
+
+  // Not the autoPlay attribute: it fails silently, and phones block it until the player taps
+  useEffect(() => {
+    if (stopped) return;
+    audioRef.current!.play().catch((e: DOMException) => {
+      if (e.name === "NotAllowedError") setBlockedSrc(src);
+    });
+  }, [src, stopped, audioRef]);
+
+  useEffect(() => {
+    if (graph.current) graph.current.gain.gain.value = shownVolume;
+  }, [shownVolume]);
+
+  useEffect(() => () => void graph.current?.ctx.close(), []);
 
   useEffect(() => {
     const g = canvasRef.current?.getContext("2d");
     if (!g) return;
+    // Stays zeroed while paused, so the meter is drawn once, unlit
     const bins = new Uint8Array(FFT_SIZE / 2);
     let frame = 0;
     const draw = () => {
-      graph.current?.analyser.getByteFrequencyData(bins);
+      if (playing) graph.current?.analyser.getByteFrequencyData(bins);
       g.clearRect(0, 0, g.canvas.width, g.canvas.height);
       for (let b = 0; b < BARS; b++) {
         const [lo, hi] = BAR_BINS[b];
@@ -95,14 +115,11 @@ export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) 
           );
         }
       }
-      frame = requestAnimationFrame(draw);
+      if (playing) frame = requestAnimationFrame(draw);
     };
     draw();
-    return () => {
-      cancelAnimationFrame(frame);
-      void graph.current?.ctx.close();
-    };
-  }, []);
+    return () => cancelAnimationFrame(frame);
+  }, [playing]);
 
   // A media element can only be routed into one AudioContext, so build it once
   const connectAnalyser = () => {
@@ -113,23 +130,28 @@ export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) 
       // Headroom for loud masters, which otherwise pin every bar in the red
       analyser.minDecibels = -95;
       analyser.maxDecibels = -15;
+      // Volume is a gain node because iOS ignores audio.volume
+      const gain = ctx.createGain();
+      gain.gain.value = shownVolume;
       ctx
         .createMediaElementSource(audioRef.current!)
         .connect(analyser)
+        .connect(gain)
         .connect(ctx.destination);
-      graph.current = { ctx, analyser };
+      graph.current = { ctx, analyser, gain };
     }
     void graph.current.ctx.resume();
   };
 
   const togglePlay = () => {
     const audio = audioRef.current!;
-    // Rejections are aborted loads or bad sources, which onError already reports
-    if (audio.paused) audio.play().catch(() => {});
-    else audio.pause();
+    if (audio.paused) {
+      // iOS only lets an AudioContext start during a tap, and the audio is silent until it does
+      connectAnalyser();
+      // Rejections are aborted loads or bad sources, which onError already reports
+      audio.play().catch(() => {});
+    } else audio.pause();
   };
-
-  const shownVolume = muted ? 0 : volume;
 
   return (
     <div className="mt-3">
@@ -137,7 +159,6 @@ export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) 
         ref={audioRef}
         crossOrigin="anonymous"
         src={src}
-        autoPlay={!stopped}
         onLoadedMetadata={(e) => {
           // Late joiners pick the song up where everyone else is
           if (startAt > 1) e.currentTarget.currentTime = startAt;
@@ -145,6 +166,7 @@ export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) 
         onPlay={() => {
           connectAnalyser();
           setPlaying(true);
+          setBlockedSrc("");
         }}
         onPause={() => setPlaying(false)}
         onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
@@ -152,12 +174,14 @@ export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) 
           const d = e.currentTarget.duration;
           setDuration(Number.isFinite(d) ? d : 0);
         }}
-        onVolumeChange={(e) => {
-          setVolume(e.currentTarget.volume);
-          setMuted(e.currentTarget.muted);
-        }}
         onError={() => setFailedSrc(src)}
       />
+
+      {blocked && (
+        <button onClick={togglePlay} className="btn btn-yellow-fill mb-3 w-full py-4 text-sm">
+          ▶ TAP TO PLAY
+        </button>
+      )}
 
       <div className="border-2 border-arcade-cyan/30 bg-cab-black p-2 motion-reduce:hidden">
         <canvas
@@ -212,11 +236,9 @@ export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) 
 
       <div className="mt-3 flex items-center gap-3 text-arcade-cyan">
         <button
-          onClick={() => {
-            audioRef.current!.muted = !muted;
-          }}
+          onClick={() => setMuted(!muted)}
           aria-label={muted ? "Unmute" : "Mute"}
-          className="cursor-pointer hover:text-arcade-yellow"
+          className="-m-3 cursor-pointer p-3 hover:text-arcade-yellow"
         >
           <Icon name={shownVolume === 0 ? "muted" : "speaker"} />
         </button>
@@ -228,9 +250,8 @@ export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) 
           step={0.05}
           value={shownVolume}
           onChange={(e) => {
-            const audio = audioRef.current!;
-            audio.volume = Number(e.target.value);
-            audio.muted = false;
+            setVolume(Number(e.target.value));
+            setMuted(false);
           }}
           className="pixel-range flex-1"
           style={{ "--fill": `${shownVolume * 100}%` } as CSSProperties}

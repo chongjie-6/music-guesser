@@ -28,6 +28,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: var(--font-body);
   font-size: 18px;
   background-color: var(--color-cab-black);
@@ -79,6 +80,16 @@ select {
   font-size: 10px !important;
 }
 
+/* iOS zooms into fields under 16px, and Press Start at 16px clips the placeholders */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-family: var(--font-body) !important;
+    font-size: 20px !important;
+  }
+}
+
 input:focus,
 select:focus {
   outline: none !important;
@@ -89,9 +100,11 @@ select:focus {
 }
 
 /* ── Pixel range slider (fill width comes from --fill) ── */
+/* The track is 10px, but the padding gives thumbs a 28px tall target */
 .pixel-range {
   appearance: none;
-  height: 10px;
+  height: 28px;
+  padding: 9px 0;
   margin: 0;
   cursor: pointer;
   background: linear-gradient(
@@ -99,6 +112,7 @@ select:focus {
     currentColor var(--fill, 0%),
     rgba(240, 240, 255, 0.12) var(--fill, 0%)
   );
+  background-clip: content-box;
 }
 .pixel-range::-webkit-slider-thumb {
   appearance: none;
@@ -251,8 +265,11 @@ select:focus {
   transition: all 0.08s;
   display: inline-block;
 }
-.btn:hover {
-  transform: translate(-2px, -2px);
+/* Hover effects only where hover exists; on touch screens they stick after a tap */
+@media (hover: hover) {
+  .btn:hover {
+    transform: translate(-2px, -2px);
+  }
 }
 .btn:active {
   transform: translate(2px, 2px);
@@ -269,11 +286,6 @@ select:focus {
   color: var(--color-arcade-yellow);
   box-shadow: 4px 4px 0 var(--color-arcade-yellow);
 }
-.btn-yellow:hover {
-  background: var(--color-arcade-yellow);
-  color: var(--color-cab-black);
-  box-shadow: 6px 6px 0 rgba(245, 230, 66, 0.5);
-}
 
 .btn-yellow-fill {
   border-color: var(--color-arcade-yellow);
@@ -282,19 +294,11 @@ select:focus {
   font-weight: 700;
   box-shadow: 4px 4px 0 rgba(245, 230, 66, 0.5);
 }
-.btn-yellow-fill:hover {
-  background: #ffe800;
-  box-shadow: 6px 6px 0 rgba(245, 230, 66, 0.6);
-}
 
 .btn-cyan {
   border-color: var(--color-arcade-cyan);
   color: var(--color-arcade-cyan);
   box-shadow: 4px 4px 0 var(--color-arcade-cyan);
-}
-.btn-cyan:hover {
-  background: var(--color-arcade-cyan);
-  color: var(--color-cab-black);
 }
 
 .btn-green {
@@ -302,19 +306,35 @@ select:focus {
   color: var(--color-arcade-green);
   box-shadow: 4px 4px 0 var(--color-arcade-green);
 }
-.btn-green:hover {
-  background: var(--color-arcade-green);
-  color: var(--color-cab-black);
-}
 
 .btn-red {
   border-color: var(--color-arcade-red);
   color: var(--color-arcade-red);
   box-shadow: 4px 4px 0 var(--color-arcade-red);
 }
-.btn-red:hover {
-  background: var(--color-arcade-red);
-  color: #fff;
+
+@media (hover: hover) {
+  .btn-yellow:hover {
+    background: var(--color-arcade-yellow);
+    color: var(--color-cab-black);
+    box-shadow: 6px 6px 0 rgba(245, 230, 66, 0.5);
+  }
+  .btn-yellow-fill:hover {
+    background: #ffe800;
+    box-shadow: 6px 6px 0 rgba(245, 230, 66, 0.6);
+  }
+  .btn-cyan:hover {
+    background: var(--color-arcade-cyan);
+    color: var(--color-cab-black);
+  }
+  .btn-green:hover {
+    background: var(--color-arcade-green);
+    color: var(--color-cab-black);
+  }
+  .btn-red:hover {
+    background: var(--color-arcade-red);
+    color: #fff;
+  }
 }
 
 /* ── Pixel divider / rules ── */

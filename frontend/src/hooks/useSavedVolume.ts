@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useState } from "react";
 
 const VOLUME_KEY = "volume";
 
@@ -7,12 +7,8 @@ const savedVolume = () => {
   return v >= 0 && v <= 1 ? v : 1;
 };
 
-export function useSavedVolume(audioRef: RefObject<HTMLAudioElement | null>) {
+export function useSavedVolume() {
   const [volume, setVolume] = useState(savedVolume);
-
-  useEffect(() => {
-    audioRef.current!.volume = savedVolume();
-  }, [audioRef]);
 
   const saveVolume = (v: number) => {
     setVolume(v);

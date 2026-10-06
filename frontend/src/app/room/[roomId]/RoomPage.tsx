@@ -15,6 +15,9 @@ import SettingsPanel from "../../../components/SettingsPanel";
 import PlayersPanel from "../../../components/PlayersPanel";
 import Star from "../../../components/Star";
 
+// Phones get the share sheet; on desktop the clipboard is less hassle than the share dialog
+const canShare = !!navigator.share && matchMedia("(pointer: coarse)").matches;
+
 export default function RoomPage() {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -40,6 +43,11 @@ export default function RoomPage() {
       <span className={`col-start-1 row-start-1 ${copied === what ? "" : "invisible"}`}>Copied!</span>
     </span>
   );
+  const invite = () => {
+    const url = window.location.href;
+    if (canShare) navigator.share({ text: "Join my Beat The Drop room", url }).catch(() => {});
+    else copy("link", url);
+  };
 
   const player = room?.players.find((p) => p.id === me);
   const isHost = !!room && room.hostId === me;
@@ -61,7 +69,7 @@ export default function RoomPage() {
       {roundBreak && room && round && reveal && round.round < round.totalRounds && (
         <RoundResults key={round.round} room={room} round={round} reveal={reveal} me={me} />
       )}
-      <main className="relative min-h-screen bg-pixel-grid overflow-hidden">
+      <main className="relative min-h-dvh bg-pixel-grid overflow-hidden">
         {/* Top marquee */}
         <div className="marquee-wrap marquee-fast sticky top-0 z-10">
           <InfiniteLooper
@@ -76,7 +84,7 @@ export default function RoomPage() {
           />
         </div>
 
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-4 pb-24 lg:pb-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-4 pb-48 lg:pb-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           {/* Chat panel */}
           <div>
             {error && (
@@ -93,8 +101,11 @@ export default function RoomPage() {
 
           {/* Sidebar */}
           <aside className="order-first flex flex-col gap-3 lg:order-0">
+            {/* Mid-game on phones these push the round below the fold */}
             {room?.kind === "party" && (
-              <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
+              <div
+                className={`border-2 border-yellow-400/30 bg-cab-dark p-3 ${room.running ? "hidden lg:block" : ""}`}
+              >
                 <p className="font-display text-sm text-yellow-600/60 uppercase tracking-widest mb-1">
                   ROOM CODE
                 </p>
@@ -103,17 +114,16 @@ export default function RoomPage() {
                   <button onClick={() => copy("code", roomId ?? "")} className="btn btn-cyan text-xs">
                     {copyLabel("code", "Copy code")}
                   </button>
-                  <button
-                    onClick={() => copy("link", window.location.href)}
-                    className="btn btn-cyan text-xs"
-                  >
-                    {copyLabel("link", "Copy invite link")}
+                  <button onClick={invite} className="btn btn-cyan text-xs">
+                    {canShare ? "Share invite link" : copyLabel("link", "Copy invite link")}
                   </button>
                 </div>
               </div>
             )}
             {room && room.kind !== "party" && (
-              <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
+              <div
+                className={`border-2 border-yellow-400/30 bg-cab-dark p-3 ${room.running ? "hidden lg:block" : ""}`}
+              >
                 <p className="font-display text-sm glow-yellow uppercase tracking-widest">
                   {room.kind === "daily" ? `DAILY CHALLENGE · ${room.dailyDate}` : "SOLO PRACTICE"}
                 </p>

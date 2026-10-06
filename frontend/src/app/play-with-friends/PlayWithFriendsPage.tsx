@@ -15,7 +15,7 @@ export default function PlayWithFriendsPage() {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-pixel-grid px-4 py-10">
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-pixel-grid px-4 py-10">
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="h-[600px] w-[600px] rounded-full bg-cyan-400/4 blur-3xl" />
       </div>
@@ -58,7 +58,7 @@ export default function PlayWithFriendsPage() {
                 maxLength={20}
                 value={username}
                 onChange={(e) => handleSetUsername(e.target.value)}
-                className="w-full border-2 border-yellow-400/50 bg-cab-black px-3 py-3 text-yellow-200 tracking-widest placeholder:text-yellow-900/60 transition-all"
+                className="w-full border-2 border-yellow-400/50 bg-cab-black px-3 py-3 text-yellow-200 tracking-widest placeholder:text-yellow-200/40 transition-all"
               />
             </div>
             <div>
@@ -73,7 +73,10 @@ export default function PlayWithFriendsPage() {
                 placeholder="PASTE CODE HERE_"
                 value={roomID}
                 onChange={(e) => setRoomID(e.target.value)}
-                className="w-full border-2 border-cyan-400/50 bg-cab-black px-3 py-3 text-cyan-200 tracking-widest placeholder:text-cyan-900/50 transition-all"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="w-full border-2 border-cyan-400/50 bg-cab-black px-3 py-3 text-cyan-200 tracking-widest placeholder:text-cyan-200/40 transition-all"
               />
             </div>
           </div>

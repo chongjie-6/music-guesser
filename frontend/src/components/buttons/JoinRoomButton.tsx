@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 export const JoinRoomButton = ({ roomID }: { roomID: string }) => {
   const navigate = useNavigate();
-  const id = roomID.trim();
+  // Room ids are always lowercase, and phone keyboards capitalise the first letter
+  const id = roomID.trim().toLowerCase();
   return (
     <button
       onClick={() => navigate(`/play-with-friends/room/${encodeURIComponent(id)}`)}

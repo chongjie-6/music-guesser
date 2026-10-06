@@ -36,7 +36,7 @@ export default function PlayersPanel({
           onClick={() => socket.emit("kick-player", { roomId: room.roomId, playerId: player.id })}
           aria-label={`Kick ${player.name}`}
           title="Kick"
-          className="shrink-0 cursor-pointer text-arcade-red hover:text-white"
+          className="-m-3 shrink-0 cursor-pointer p-3 text-arcade-red hover:text-white"
         >
           ✕
         </button>

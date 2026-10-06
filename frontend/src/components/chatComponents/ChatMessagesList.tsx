@@ -2,6 +2,27 @@ import { useEffect, useRef } from "react";
 import type { Message } from "../../types/types";
 import ChatMessageInput from "./ChatMessageInput";
 
+const MessageLine = ({ message, small }: { message: Message; small?: boolean }) =>
+  message.type === "system" ? (
+    <p
+      className={`px-2 py-1 font-display leading-relaxed glow-cyan wrap-anywhere ${small ? "text-[10px]" : "text-xs"}`}
+    >
+      » {message.message}
+    </p>
+  ) : (
+    <div
+      className={`border border-yellow-400/8 bg-yellow-400/2 px-2 py-1.5 font-display leading-relaxed wrap-anywhere ${small ? "text-[10px]" : "text-sm"}`}
+    >
+      <span className="glow-magenta">{message.senderName.toUpperCase()}</span>
+      <span className="text-yellow-600/50 mx-1.5">&gt;</span>
+      <span className="text-yellow-200/70">{message.message}</span>
+      {message.type === "close" && <span className="glow-orange ml-2">CLOSE!</span>}
+      {message.type === "solved" && (
+        <span className="glow-green ml-2">(ONLY PLAYERS WHO GOT IT SEE THIS)</span>
+      )}
+    </div>
+  );
+
 export default function ChatMessages({
   messages,
   roomId,
@@ -21,7 +42,7 @@ export default function ChatMessages({
   }, [messages]);
 
   return (
-    <div className="pixel-box flex h-[70vh] w-full flex-col p-4">
+    <div className="pixel-box flex h-[50dvh] w-full flex-col p-4 lg:h-[70dvh]">
       <div className="pixel-rule-rainbow mb-3" />
       <h2 className="font-display text-sm glow-yellow uppercase tracking-widest mb-3">
         ▶ CHAT FEED
@@ -35,33 +56,19 @@ export default function ChatMessages({
             WAITING FOR PLAYERS...
           </p>
         )}
-        {messages.map((message, idx) =>
-          message.type === "system" ? (
-            <p
-              key={idx}
-              className="px-2 py-1 font-display text-xs leading-relaxed glow-cyan wrap-anywhere"
-            >
-              » {message.message}
-            </p>
-          ) : (
-            <div
-              key={idx}
-              className="border border-yellow-400/8 bg-yellow-400/2 px-2 py-1.5 font-display text-sm leading-relaxed wrap-anywhere"
-            >
-              <span className="glow-magenta">{message.senderName.toUpperCase()}</span>
-              <span className="text-yellow-600/50 mx-1.5">&gt;</span>
-              <span className="text-yellow-200/70">{message.message}</span>
-              {message.type === "close" && (
-                <span className="glow-orange ml-2">CLOSE!</span>
-              )}
-              {message.type === "solved" && (
-                <span className="glow-green ml-2">(ONLY PLAYERS WHO GOT IT SEE THIS)</span>
-              )}
-            </div>
-          ),
-        )}
+        {messages.map((message, idx) => (
+          <MessageLine key={idx} message={message} />
+        ))}
       </div>
-      <ChatMessageInput roomId={roomId} placeholder={placeholder} />
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-yellow-400/40 bg-cab-dark p-3 lg:static lg:border-0 lg:bg-transparent lg:p-0">
+        {/* On phones the feed sits far below the round, so the latest lines ride along with the input */}
+        <div className="mb-2 flex max-h-24 flex-col justify-end gap-1 overflow-hidden empty:hidden lg:hidden">
+          {messages.slice(-2).map((message, idx) => (
+            <MessageLine key={idx} message={message} small />
+          ))}
+        </div>
+        <ChatMessageInput roomId={roomId} placeholder={placeholder} />
+      </div>
     </div>
   );
 }
