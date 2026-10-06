@@ -73,10 +73,13 @@ test("artist mode accepts any credited artist", () => {
   assert.strictEqual(judgeGuess("swae lee", answers), "correct");
 });
 
-test("faster guesses score more", () => {
-  assert.strictEqual(pointsFor(4000, 15000), 3);
-  assert.strictEqual(pointsFor(14000, 15000), 2);
-  assert.strictEqual(pointsFor(17000, 15000), 1);
+test("faster guesses score more, and each earlier guesser costs 50", () => {
+  assert.strictEqual(pointsFor(0, 15000, 0), 1000);
+  assert.strictEqual(pointsFor(5000, 15000, 0), 750);
+  assert.strictEqual(pointsFor(5100, 15000, 0), 745);
+  assert.strictEqual(pointsFor(5000.0000000000009, 15000, 1), 700);
+  assert.strictEqual(pointsFor(5000, 15000, 7), 400);
+  assert.strictEqual(pointsFor(19500, 15000, 3), 0);
 });
 
 test("hints are revealed one stage at a time", () => {
@@ -111,7 +114,7 @@ test("everyone can score once per round, and the round waits for every connected
   await startGame(room);
   beginRound(room);
   assert.strictEqual(guessVerdict(room, "alpha"), "correct");
-  assert.deepStrictEqual(recordSolve(room, ann), { points: 3, answer: "Alpha" });
+  assert.strictEqual(recordSolve(room, ann).answer, "Alpha");
   assert.strictEqual(recordSolve(room, ann), null);
   assert.strictEqual(roundDone(room), false);
 
@@ -121,7 +124,7 @@ test("everyone can score once per round, and the round waits for every connected
   recordSolve(room, bob);
   assert.strictEqual(roundDone(room), true);
   assert.deepStrictEqual(finishRound(room).reveal.guessers.map((g) => g.name), ["Ann", "Bob"]);
-  assert.strictEqual(ann.score + bob.score, 6);
+  assert.ok(ann.score > bob.score && bob.score > 0);
 });
 
 test("a round never counts as done with nobody connected", async () => {

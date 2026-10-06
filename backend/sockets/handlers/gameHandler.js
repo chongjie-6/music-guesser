@@ -1,6 +1,7 @@
 const { playerFor, isRunning, broadcastRoom, systemMessage } = require("../../service/roomService");
 const {
   HINT_STAGES,
+  SILENT_GUESS_MS,
   startGame,
   beginRound,
   roundPayload,
@@ -11,8 +12,6 @@ const {
   roundDone,
   finishRound,
 } = require("../../service/gameService");
-
-const SILENT_GUESS_MS = 5000;
 
 const clearRoomTimer = (room) => {
   clearTimeout(room.timer);

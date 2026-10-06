@@ -22,13 +22,16 @@ export default function GameOverScreen({
   closeLabel: string;
 }) {
   const [shared, setShared] = useState(false);
+  const roundMax = result.maxScore / result.recap.length;
   // Daily rooms are solo, so any guesser is the player
-  const grid = result.recap.map((r) => GRID[r.guessers[0]?.points ?? 0]).join("");
+  const grid = result.recap
+    .map((r) => GRID[Math.ceil(((r.guessers[0]?.points ?? 0) / roundMax) * 3)])
+    .join("");
 
   const share = () => {
     const text = [
       `BEAT THE DROP DAILY ${result.daily}`,
-      `${grid} ${result.topScore}/${result.recap.length * 3}`,
+      `${grid} ${result.topScore}/${result.maxScore}`,
       window.location.origin,
     ].join("\n");
     if (navigator.share) {

@@ -2,6 +2,9 @@ const { getSongs } = require("./songService");
 const { prepareForGame, seatedPlayers } = require("./roomService");
 
 const HINT_STAGES = 4;
+const SILENT_GUESS_MS = 5000;
+const MAX_POINTS = 1000;
+const LATER_GUESS_PENALTY = 50;
 
 // Bracketed text and " - Remastered 2011" style suffixes
 const stripExtras = (value = "") =>
@@ -56,8 +59,14 @@ const judgeGuess = (guess, answers) => {
 // "Post Malone & Swae Lee" also accepts either artist on their own
 const artistAnswers = (artist = "") => [artist, ...artist.split(/\s*[,&]\s*/)];
 
-const pointsFor = (elapsedMs, musicMs) =>
-  elapsedMs < musicMs / 3 ? 3 : elapsedMs < musicMs ? 2 : 1;
+/**
+ * Points that drop every millisecond until the round ends, minus 50 for each player who got it first.
+ */
+const pointsFor = (elapsedMs, musicMs, rank) =>
+  Math.max(
+    0,
+    Math.round(MAX_POINTS * (1 - elapsedMs / (musicMs + SILENT_GUESS_MS))) - LATER_GUESS_PENALTY * rank,
+  );
 
 const maskAnswer = (text) =>
   displayTitle(text).replace(/\S+/g, (word) => {
@@ -237,12 +246,12 @@ const pickOption = (room, playerId, index) => {
 };
 
 /**
- * Scores a correct guess by how fast it came. Returns null if the player already scored this round.
+ * Scores a correct guess by how fast it came and who got it first. Returns null if the player already scored this round.
  */
 const recordSolve = (room, player) => {
   const game = room.game;
   if (hasSolved(room, player.id)) return null;
-  const points = pointsFor(Date.now() - game.startedAt, game.musicMs);
+  const points = pointsFor(Date.now() - game.startedAt, game.musicMs, game.guessers.length);
   player.score += points;
   game.guessers.push({ id: player.id, name: player.name, points });
   return { points, answer: roundAnswer(game) };
@@ -269,6 +278,7 @@ const computeResult = (room) => {
     winner: topScore > 0 && top.length === 1 ? top[0].name : null,
     isTie: topScore > 0 && top.length > 1,
     topScore,
+    maxScore: room.game.recap.length * MAX_POINTS,
     scores,
     recap: room.game.recap,
     daily: room.kind === "daily" ? room.dailyDate : null,
@@ -297,6 +307,7 @@ const finishRound = (room) => {
 
 module.exports = {
   HINT_STAGES,
+  SILENT_GUESS_MS,
   normalizeText,
   judgeGuess,
   artistAnswers,

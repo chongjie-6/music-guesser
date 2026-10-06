@@ -91,6 +91,7 @@ export type GameEnd = {
   scores: PlayerScore[];
   isTie: boolean;
   topScore: number;
+  maxScore: number;
   recap: Reveal[];
   daily: string | null;
 };

@@ -61,7 +61,7 @@ test("a correct guess keeps the round going until everyone has it", async () => 
   solve(io, room, bob);
   assert.ok(events.includes("round-end"));
   assert.strictEqual(room.game.round, 2);
-  assert.deepStrictEqual([ann.score, bob.score], [3, 2]);
+  assert.deepStrictEqual([ann.score, bob.score], [1000, 650]);
 
   clearRoomTimer(room);
   mock.timers.reset();

@@ -12,7 +12,7 @@ A real-time multiplayer music guessing game. Players join a shared room, listen 
 - **Host controls** — the room creator starts games, changes settings and can kick players; the role passes on if they leave
 - **Game settings** — rounds (5–20), music length (10–30s), genre and era filters, and three modes: guess the title, guess the artist, or multiple choice
 - **Hints over time** — the year shows first, then the genre, the artist, and finally the title's first letters, while pixelated album art sharpens
-- **Everyone can score** — a round lasts until every player has guessed it or time runs out; each correct guess scores 3 points in the first third of the music, 2 before it stops, 1 in the 5 silent seconds after
+- **Everyone can score** — a round lasts until every player has guessed it or time runs out; each correct guess scores up to 1000 points, dropping every millisecond until the round ends, minus 50 for each player who got it first
 - **Forgiving guesses** — accents, punctuation and small typos are accepted; near misses are only shown to the guesser, and players who got it can only chat with each other, so nobody can copy them
 - **Reconnects** — a reload or dropped connection rejoins the same game with the same score, mid-song
 - **No repeats** — songs don't repeat within a room until every matching song has been played
