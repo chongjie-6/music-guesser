@@ -32,6 +32,13 @@ export default function RoomPage() {
       setTimeout(() => setCopied(""), 1500);
     });
   };
+  // Both labels share one grid cell so the button keeps the wider one's width.
+  const copyLabel = (what: string, idle: string) => (
+    <span className="grid">
+      <span className={`col-start-1 row-start-1 ${copied === what ? "invisible" : ""}`}>{idle}</span>
+      <span className={`col-start-1 row-start-1 ${copied === what ? "" : "invisible"}`}>Copied!</span>
+    </span>
+  );
 
   const player = room?.players.find((p) => p.id === me);
   const isHost = !!room && room.hostId === me;
@@ -89,13 +96,13 @@ export default function RoomPage() {
                 <p className="font-display text-sm glow-yellow mb-2 wrap-anywhere">{roomId}</p>
                 <div className="flex flex-wrap gap-2" aria-live="polite">
                   <button onClick={() => copy("code", roomId ?? "")} className="btn btn-cyan text-xs">
-                    {copied === "code" ? "Copied!" : "Copy code"}
+                    {copyLabel("code", "Copy code")}
                   </button>
                   <button
                     onClick={() => copy("link", window.location.href)}
                     className="btn btn-cyan text-xs"
                   >
-                    {copied === "link" ? "Copied!" : "Copy invite link"}
+                    {copyLabel("link", "Copy invite link")}
                   </button>
                 </div>
               </div>
