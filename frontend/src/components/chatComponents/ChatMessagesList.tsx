@@ -5,9 +5,11 @@ import ChatMessageInput from "./ChatMessageInput";
 export default function ChatMessages({
   messages,
   roomId,
+  placeholder,
 }: {
   messages: Message[];
   roomId: string | undefined;
+  placeholder?: string;
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -24,7 +26,6 @@ export default function ChatMessages({
       <h2 className="font-display text-sm glow-yellow uppercase tracking-widest mb-3">
         ▶ CHAT FEED
       </h2>
-
       <div
         ref={scrollRef}
         className="mb-3 flex-1 space-y-1.5 overflow-y-auto border-2 border-yellow-400/20 bg-cab-black p-3 crt-surface"
@@ -34,21 +35,33 @@ export default function ChatMessages({
             WAITING FOR PLAYERS...
           </p>
         )}
-        {messages.map((message, idx) => (
-          <div
-            key={idx}
-            className="border border-yellow-400/8 bg-yellow-400/2 px-2 py-1.5 font-display text-sm leading-relaxed wrap-anywhere"
-          >
-            <span className="glow-magenta">
-              {(message.senderName || message.senderId).toUpperCase()}
-            </span>
-            <span className="text-yellow-600/50 mx-1.5">&gt;</span>
-            <span className="text-yellow-200/70">{message.message}</span>
-          </div>
-        ))}
+        {messages.map((message, idx) =>
+          message.type === "system" ? (
+            <p
+              key={idx}
+              className="px-2 py-1 font-display text-xs leading-relaxed glow-cyan wrap-anywhere"
+            >
+              » {message.message}
+            </p>
+          ) : (
+            <div
+              key={idx}
+              className="border border-yellow-400/8 bg-yellow-400/2 px-2 py-1.5 font-display text-sm leading-relaxed wrap-anywhere"
+            >
+              <span className="glow-magenta">{message.senderName.toUpperCase()}</span>
+              <span className="text-yellow-600/50 mx-1.5">&gt;</span>
+              <span className="text-yellow-200/70">{message.message}</span>
+              {message.type === "close" && (
+                <span className="glow-orange ml-2">CLOSE! (ONLY YOU SEE THIS)</span>
+              )}
+              {message.type === "solved" && (
+                <span className="glow-green ml-2">(ONLY PLAYERS WHO GOT IT SEE THIS)</span>
+              )}
+            </div>
+          ),
+        )}
       </div>
-
-      <ChatMessageInput roomId={roomId} />
+      <ChatMessageInput roomId={roomId} placeholder={placeholder} />
     </div>
   );
 }

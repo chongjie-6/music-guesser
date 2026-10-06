@@ -73,12 +73,14 @@ html {
 
 /* Input pixel style */
 input,
-textarea {
+textarea,
+select {
   font-family: var(--font-display) !important;
   font-size: 10px !important;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: none !important;
   border-color: var(--color-arcade-yellow) !important;
   box-shadow:

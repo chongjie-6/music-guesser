@@ -54,9 +54,10 @@ type Props = {
   src: string;
   audioRef: RefObject<HTMLAudioElement | null>;
   stopped: boolean;
+  startAt: number;
 };
 
-export default function MusicPlayer({ src, audioRef, stopped }: Props) {
+export default function MusicPlayer({ src, audioRef, stopped, startAt }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const graph = useRef<{ ctx: AudioContext; analyser: AnalyserNode } | null>(
     null,
@@ -136,7 +137,11 @@ export default function MusicPlayer({ src, audioRef, stopped }: Props) {
         ref={audioRef}
         crossOrigin="anonymous"
         src={src}
-        autoPlay
+        autoPlay={!stopped}
+        onLoadedMetadata={(e) => {
+          // Late joiners pick the song up where everyone else is
+          if (startAt > 1) e.currentTarget.currentTime = startAt;
+        }}
         onPlay={() => {
           connectAnalyser();
           setPlaying(true);

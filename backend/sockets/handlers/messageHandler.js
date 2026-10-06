@@ -1,6 +1,6 @@
-const { submitGuess } = require("../../service/gameService");
-const { isInRoom } = require("../../service/roomService");
-const { continueGame } = require("./gameHandler");
+const { guessVerdict, hasSolved } = require("../../service/gameService");
+const { playerFor } = require("../../service/roomService");
+const { solve } = require("./gameHandler");
 
 const MAX_MESSAGE_LENGTH = 200;
 const MIN_MESSAGE_INTERVAL_MS = 300;
@@ -11,7 +11,8 @@ module.exports = (io, socket) => {
    */
   socket.on("send-message", (payload) => {
     const { roomId, message } = payload || {};
-    if (!isInRoom(socket, roomId)) return;
+    const found = playerFor(socket, roomId);
+    if (!found) return;
 
     const cleanMessage = String(message ?? "")
       .trim()
@@ -22,25 +23,28 @@ module.exports = (io, socket) => {
     if (now - (socket.lastMessageAt ?? 0) < MIN_MESSAGE_INTERVAL_MS) return;
     socket.lastMessageAt = now;
 
-    const senderName = socket.user?.name || "Anonymous";
-    io.in(roomId).emit("newMessage", {
-      message: cleanMessage,
-      senderId: socket.id,
-      senderName,
-    });
+    const { room, player } = found;
+    const chat = { message: cleanMessage, senderId: player.id, senderName: player.name };
 
-    const result = submitGuess({
-      roomId,
-      userId: socket.id,
-      userName: senderName,
-      guess: cleanMessage,
-    });
-    if (!result) return;
+    // Players who know the answer can only talk to each other until the round ends
+    if (hasSolved(room, player.id)) {
+      for (const p of room.players.values()) {
+        if (hasSolved(room, p.id)) io.to(p.socketId).emit("newMessage", { ...chat, type: "solved" });
+      }
+      return;
+    }
 
-    io.in(roomId).emit("game-correct-guess", {
-      winner: result.winner,
-      answer: result.answer,
-    });
-    continueGame(io, roomId, result);
+    const verdict = guessVerdict(room, cleanMessage);
+    if (verdict === "correct" && !player.spectator) {
+      solve(io, room, player);
+      return;
+    }
+    // Anything near the answer is only shown to its sender, so nobody can copy it
+    if (verdict) {
+      const close = verdict === "close" && !player.spectator;
+      socket.emit("newMessage", close ? { ...chat, type: "close" } : chat);
+      return;
+    }
+    io.in(roomId).emit("newMessage", chat);
   });
 };

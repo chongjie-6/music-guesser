@@ -9,8 +9,9 @@ import { StartGameButton } from "../../../components/buttons/StartGameButton";
 import GameOverScreen from "../../../components/GameOverScreen";
 import RoomNotFoundModal from "../../../components/RoomNotFound";
 import InfiniteLooper from "../../../components/InfiniteLooper";
-import MusicPlayer from "../../../components/MusicPlayer";
-import Countdown from "../../../components/Countdown";
+import RoundPanel from "../../../components/RoundPanel";
+import SettingsPanel from "../../../components/SettingsPanel";
+import PlayersPanel from "../../../components/PlayersPanel";
 import Star from "../../../components/Star";
 
 export default function RoomPage() {
@@ -18,43 +19,36 @@ export default function RoomPage() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const {
-    error,
-    roomNotFound,
-    round,
-    scores,
-    lastWinnerMessage,
-    gameEnd,
-    musicStopped,
-    deadline,
-    resetGame,
-  } = useGameEvents(roomId, audioRef);
+  const { error, joinError, me, room, round, reveal, gameEnd, deadline, resetGame } =
+    useGameEvents(roomId, audioRef);
 
   useJoinRoom(roomId);
   useNewMessageSocket(setMessages);
 
-  const [copied, setCopied] = useState(false);
-
-  const copyToClipboard = (roomId: string | undefined) => {
-    if (!roomId) return;
-    navigator.clipboard?.writeText(roomId).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+  const [copied, setCopied] = useState("");
+  const copy = (what: string, text: string) => {
+    navigator.clipboard?.writeText(text).then(() => {
+      setCopied(what);
+      setTimeout(() => setCopied(""), 1500);
     });
   };
 
+  const player = room?.players.find((p) => p.id === me);
+  const isHost = !!room && room.hostId === me;
+  const home = room?.kind === "party" ? "/play-with-friends" : "/";
+
   return (
     <>
-      {roomNotFound && (
-        <RoomNotFoundModal onGoBack={() => navigate("/play-with-friends")} />
+      {joinError && (
+        <RoomNotFoundModal message={joinError} onGoBack={() => navigate("/play-with-friends")} />
       )}
-      {gameEnd && (
+      {gameEnd && !joinError && (
         <GameOverScreen
           result={gameEnd}
-          onPlayAgain={resetGame}
+          onClose={gameEnd.daily ? () => navigate("/") : resetGame}
+          closeLabel={gameEnd.daily ? "◀ BACK HOME" : "▶ BACK TO LOBBY"}
         />
       )}
-
       <main className="relative min-h-screen bg-pixel-grid overflow-hidden">
         {/* Top marquee */}
         <div className="marquee-wrap marquee-fast sticky top-0 z-10">
@@ -70,7 +64,7 @@ export default function RoomPage() {
           />
         </div>
 
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-4 pb-24 lg:pb-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-4 pb-24 lg:pb-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           {/* Chat panel */}
           <div>
             {error && (
@@ -78,120 +72,101 @@ export default function RoomPage() {
                 ⚠ {error}
               </div>
             )}
-            <ChatMessages messages={messages} roomId={roomId} />
+            <ChatMessages
+              messages={messages}
+              roomId={roomId}
+              placeholder={round?.solved && room?.running ? "CHAT WITH WHO GOT IT_" : undefined}
+            />
           </div>
 
           {/* Sidebar */}
           <aside className="order-first flex flex-col gap-3 lg:order-0">
-            {/* Room ID */}
-            <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
-              <p className="font-display text-sm text-yellow-600/60 uppercase tracking-widest mb-1">
-                ROOM CODE
-              </p>
-              <div>
-                <p className="font-display text-sm glow-yellow">{roomId}</p>
-                <button
-                  onClick={() => copyToClipboard(roomId)}
-                  className="btn btn-cyan text-xs"
-                  aria-live="polite"
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
+            {room?.kind === "party" && (
+              <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
+                <p className="font-display text-sm text-yellow-600/60 uppercase tracking-widest mb-1">
+                  ROOM CODE
+                </p>
+                <p className="font-display text-sm glow-yellow mb-2 wrap-anywhere">{roomId}</p>
+                <div className="flex flex-wrap gap-2" aria-live="polite">
+                  <button onClick={() => copy("code", roomId ?? "")} className="btn btn-cyan text-xs">
+                    {copied === "code" ? "Copied!" : "Copy code"}
+                  </button>
+                  <button
+                    onClick={() => copy("link", window.location.href)}
+                    className="btn btn-cyan text-xs"
+                  >
+                    {copied === "link" ? "Copied!" : "Copy invite link"}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
+            {room && room.kind !== "party" && (
+              <div className="border-2 border-yellow-400/30 bg-cab-dark p-3">
+                <p className="font-display text-sm glow-yellow uppercase tracking-widest">
+                  {room.kind === "daily" ? `DAILY CHALLENGE · ${room.dailyDate}` : "SOLO PRACTICE"}
+                </p>
+                {room.kind === "daily" && (
+                  <p className="font-body text-lg text-yellow-200/60 mt-1">
+                    {room.settings.rounds} SONGS. SAME FOR EVERYONE TODAY.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Controls */}
-            <div className="flex flex-wrap gap-2">
-              <StartGameButton roomID={roomId} />
-              <button
-                onClick={() => navigate("/play-with-friends")}
-                className="btn btn-red text-sm"
-              >
+            <div className="flex flex-wrap items-center gap-2">
+              {room && !room.running && isHost && <StartGameButton roomID={roomId} />}
+              {room && !room.running && !isHost && (
+                <p className="font-display text-xs text-yellow-600/60 blink">WAITING FOR HOST...</p>
+              )}
+              {room?.running && !round && (
+                <p className="font-display text-xs glow-cyan blink">LOADING TRACKS...</p>
+              )}
+              <button onClick={() => navigate(home)} className="btn btn-red text-sm">
                 ✕ LEAVE
               </button>
             </div>
 
-            {/* Round info */}
-            {round && (
-              <div className="pixel-box-cyan p-4">
-                <div className="pixel-rule-cyan mb-3" />
-                <p className="font-display text-sm glow-cyan uppercase tracking-widest mb-3">
-                  — ROUND {round.round} / 10 —
-                </p>
-                {deadline !== null && (
-                  <p
-                    className={`font-display text-sm mb-3 ${musicStopped ? "glow-red" : "glow-yellow"}`}
-                  >
-                    {musicStopped ? "MUSIC STOPPED · " : "⏱ "}
-                    {/* Remount per deadline so the first render isn't a stale tick */}
-                    <Countdown key={deadline} deadline={deadline} />s LEFT
-                  </p>
+            {player?.spectator && (
+              <p className="pixel-box-magenta p-3 font-body text-lg glow-magenta">
+                ROOM'S FULL, SO YOU'RE SPECTATING. YOU'LL GET A SEAT IN THE NEXT GAME IF ONE
+                FREES UP.
+              </p>
+            )}
+
+            {room && !room.running && room.kind !== "daily" && (
+              <SettingsPanel room={room} isHost={isHost} />
+            )}
+
+            {round && roomId && (
+              <RoundPanel
+                roomId={roomId}
+                round={round}
+                deadline={deadline}
+                audioRef={audioRef}
+                canPlay={!!player && !player.spectator}
+              />
+            )}
+
+            {reveal && (
+              <div className="pixel-box-magenta flex items-center gap-3 p-3">
+                {reveal.artwork && (
+                  <img src={reveal.artwork} alt="" className="h-16 w-16 shrink-0" />
                 )}
-                <div className="font-body text-xl space-y-1 text-cyan-200/80">
-                  <p>
-                    ARTIST:{" "}
-                    <span className="glow-magenta">{round.artistName}</span>
-                  </p>
-                  <p>
-                    GENRE:{" "}
-                    <span className="glow-magenta">
-                      {round.primaryGenreName}
-                    </span>
-                  </p>
-                  <p>
-                    YEAR:{" "}
-                    <span className="glow-magenta">
-                      {round.releaseDate?.slice(0, 4) ?? "?"}
-                    </span>
-                  </p>
-                </div>
-                <MusicPlayer
-                  src={round.previewUrl}
-                  audioRef={audioRef}
-                  stopped={musicStopped}
-                />
-                <div className="pixel-rule-cyan mt-3" />
-              </div>
-            )}
-
-            {/* Winner flash */}
-            {lastWinnerMessage && (
-              <div className="pixel-box-magenta p-3 font-display text-sm glow-magenta leading-relaxed blink">
-                <Star className="inline align-[0.09em] drop-shadow-[0_0_6px_rgba(255,0,204,0.9)]" />{" "}
-                {lastWinnerMessage}
-              </div>
-            )}
-
-            {/* Scoreboard */}
-            {scores.length > 0 && (
-              <div className="pixel-box p-4">
-                <div className="pixel-rule-rainbow mb-3" />
-                <p className="font-display text-sm glow-yellow mb-3 tracking-widest">
-                  HI-SCORE TABLE
-                </p>
-                <ul className="flex flex-col gap-1.5">
-                  {scores.map(({ id, name, score }, i) => (
-                    <li
-                      key={id}
-                      className={`flex justify-between items-center gap-3 px-3 py-2 font-display text-sm ${
-                        i === 0
-                          ? "score-row-top glow-yellow"
-                          : i === 1
-                            ? "score-row-2 glow-cyan"
-                            : i === 2
-                              ? "score-row-3 glow-magenta"
-                              : "score-row-dim text-yellow-200/40"
-                      }`}
-                    >
-                      <span className="wrap-anywhere">
-                        {i + 1}. {name.toUpperCase()}
-                      </span>
-                      <span className="shrink-0">{score} PTS</span>
-                    </li>
+                <div className="min-w-0 font-display text-xs leading-relaxed wrap-anywhere">
+                  <p className="glow-magenta">{reveal.answer}</p>
+                  <p className="text-cyan-200/70">{reveal.artist}</p>
+                  {reveal.guessers.length === 0 && <p className="glow-red">NOBODY GOT IT!</p>}
+                  {reveal.guessers.map((g) => (
+                    <p key={g.id} className="glow-green">
+                      <Star className="inline align-[0.09em]" /> {g.name.toUpperCase()} +{g.points}
+                    </p>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
+
+            {room && <PlayersPanel room={room} me={me} isHost={isHost} />}
           </aside>
         </div>
 

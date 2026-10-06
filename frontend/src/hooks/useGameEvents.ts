@@ -1,93 +1,90 @@
 import { useEffect, useState, type RefObject } from "react";
 import { socket } from "../socket";
-import type { GameEnd, GameRound, PlayerScore } from "../types/types";
+import type { GameEnd, GameRound, Hints, Reveal, RoomState, Solved } from "../types/types";
 
 export function useGameEvents(
   roomId: string | undefined,
   audioRef: RefObject<HTMLAudioElement | null>,
 ) {
   const [error, setError] = useState<string>("");
-  const [roomNotFound, setRoomNotFound] = useState(false);
+  const [joinError, setJoinError] = useState<string>("");
+  const [me, setMe] = useState<string>("");
+  const [room, setRoom] = useState<RoomState | null>(null);
   const [round, setRound] = useState<GameRound | null>(null);
-  const [scores, setScores] = useState<PlayerScore[]>([]);
-  const [lastWinnerMessage, setLastWinnerMessage] = useState<string>("");
+  const [reveal, setReveal] = useState<Reveal | null>(null);
   const [gameEnd, setGameEnd] = useState<GameEnd | null>(null);
-  const [musicStopped, setMusicStopped] = useState(false);
   const [deadline, setDeadline] = useState<number | null>(null);
 
   useEffect(() => {
-    setRoomNotFound(false);
+    setJoinError("");
     setError("");
+    setRoom(null);
+    setRound(null);
+    setReveal(null);
+    setGameEnd(null);
   }, [roomId]);
 
   useEffect(() => {
-    socket.on("error", (message: string) => {
-      if (message === "Room does not exist") setRoomNotFound(true);
-      else setError(message);
-    });
-    socket.on("game-started", (payload: GameRound) => {
-      setRound(payload);
-      setScores(payload.scores);
-      setLastWinnerMessage("");
+    socket.on("error", (message: string) => setError(message));
+    socket.on("join-error", (message: string) => setJoinError(message));
+    socket.on("joined", ({ playerId }: { playerId: string }) => setMe(playerId));
+    socket.on("room-state", (state: RoomState) => setRoom(state));
+    socket.on("game-started", () => {
+      setRound(null);
+      setReveal(null);
       setGameEnd(null);
       setError("");
-      setMusicStopped(false);
+    });
+    socket.on("game-round", (payload: GameRound) => {
+      setRound(payload);
       setDeadline(Date.now() + payload.timeLeftMs);
     });
-    socket.on("game-next-round", (payload: GameRound) => {
-      setRound(payload);
-      setScores(payload.scores);
-      setError("");
-      setMusicStopped(false);
-      setDeadline(Date.now() + payload.timeLeftMs);
+    socket.on("game-hint", (update: { stage: number; hints: Hints }) => {
+      setRound((r) => r && { ...r, ...update });
     });
     socket.on("game-music-stop", ({ timeLeftMs }: { timeLeftMs: number }) => {
-      setMusicStopped(true);
+      setRound((r) => r && { ...r, musicStopped: true });
       setDeadline(Date.now() + timeLeftMs);
       audioRef.current?.pause();
     });
-    socket.on(
-      "game-correct-guess",
-      ({ winner, answer }: { winner: string; answer: string }) => {
-        setLastWinnerMessage(`${winner} GUESSED IT! ANSWER: ${answer}`);
-      },
-    );
-    socket.on("skipped-round", ({ answer }: { answer: string }) => {
-      setLastWinnerMessage(`TIME OUT! ANSWER: ${answer}`);
+    socket.on("pick-result", ({ index }: { index: number }) => {
+      setRound((r) => r && { ...r, picked: index });
     });
+    socket.on("guess-result", (solved: Solved) => {
+      setRound((r) => r && { ...r, solved });
+    });
+    socket.on("round-end", (payload: Reveal) => setReveal(payload));
     socket.on("game-end", (result: GameEnd) => {
       setGameEnd(result);
-      setScores(result.scores);
       setDeadline(null);
       audioRef.current?.pause();
     });
+
     return () => {
-      socket.off("error");
-      socket.off("game-started");
-      socket.off("game-next-round");
-      socket.off("game-music-stop");
-      socket.off("game-correct-guess");
-      socket.off("game-end");
-      socket.off("skipped-round");
+      for (const event of [
+        "error",
+        "join-error",
+        "joined",
+        "room-state",
+        "game-started",
+        "game-round",
+        "game-hint",
+        "game-music-stop",
+        "pick-result",
+        "guess-result",
+        "round-end",
+        "game-end",
+      ]) {
+        socket.off(event);
+      }
     };
   }, [audioRef]);
 
   const resetGame = () => {
     setGameEnd(null);
     setRound(null);
-    setScores([]);
-    setLastWinnerMessage("");
+    setReveal(null);
   };
 
-  return {
-    error,
-    roomNotFound,
-    round,
-    scores,
-    lastWinnerMessage,
-    gameEnd,
-    musicStopped,
-    deadline,
-    resetGame,
-  };
+  return { error, joinError, me, room, round, reveal, gameEnd, deadline, resetGame };
 }

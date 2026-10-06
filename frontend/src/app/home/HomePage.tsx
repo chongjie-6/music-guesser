@@ -1,4 +1,5 @@
 import PlayWithFriendsButton from "../../components/buttons/PlayWithFriendsButton";
+import { CreateRoomButton } from "../../components/buttons/CreateRoomButton";
 import InfiniteLooper from "../../components/InfiniteLooper";
 
 export default function HomePage() {
@@ -44,8 +45,18 @@ export default function HomePage() {
           DOMINATE THE SCOREBOARD.
         </p>
 
-        <div className="flex justify-start">
+        <div className="flex flex-wrap justify-start gap-4">
           <PlayWithFriendsButton />
+          <CreateRoomButton
+            kind="solo"
+            label="▶ SOLO PRACTICE"
+            className="btn btn-cyan px-6 py-4 text-[10px] tracking-widest"
+          />
+          <CreateRoomButton
+            kind="daily"
+            label="★ DAILY CHALLENGE"
+            className="btn btn-green px-6 py-4 text-[10px] tracking-widest"
+          />
         </div>
 
         <div className="pixel-rule-yellow mt-8" />

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { GameEnd } from "../types/types";
 import InfiniteLooper from "./InfiniteLooper";
 
@@ -9,14 +10,37 @@ const RANK_CLASSES = [
   "score-row-dim text-yellow-200/40",
   "score-row-dim text-yellow-200/30",
 ];
+const GRID = ["⬛", "🟧", "🟨", "🟩"];
 
 export default function GameOverScreen({
   result,
-  onPlayAgain,
+  onClose,
+  closeLabel,
 }: {
   result: GameEnd;
-  onPlayAgain: () => void;
+  onClose: () => void;
+  closeLabel: string;
 }) {
+  const [shared, setShared] = useState(false);
+  // Daily rooms are solo, so any guesser is the player
+  const grid = result.recap.map((r) => GRID[r.guessers[0]?.points ?? 0]).join("");
+
+  const share = () => {
+    const text = [
+      `BEAT THE DROP DAILY ${result.daily}`,
+      `${grid} ${result.topScore}/${result.recap.length * 3}`,
+      window.location.origin,
+    ].join("\n");
+    if (navigator.share) {
+      navigator.share({ text }).catch(() => {});
+      return;
+    }
+    navigator.clipboard?.writeText(text).then(() => {
+      setShared(true);
+      setTimeout(() => setShared(false), 1500);
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex overflow-y-auto p-4 bg-cab-black/95 bg-pixel-grid">
       {/* CRT glow */}
@@ -38,10 +62,20 @@ export default function GameOverScreen({
           <div className="pixel-rule-rainbow mb-6" />
 
           <p className="font-display text-sm glow-yellow tracking-[.3em] uppercase mb-4">
-            ◈ GAME OVER ◈
+            ◈ {result.daily ? `DAILY ${result.daily}` : "GAME OVER"} ◈
           </p>
 
-          {result.isTie ? (
+          {result.daily ? (
+            <>
+              <p className="text-3xl tracking-widest mb-2">
+                {grid}
+              </p>
+              <p className="font-body text-2xl glow-yellow mb-4">{result.topScore} PTS</p>
+              <button onClick={share} className="btn btn-cyan text-sm">
+                {shared ? "COPIED!" : "SHARE RESULT"}
+              </button>
+            </>
+          ) : result.isTie ? (
             <>
               <h2 className="font-display text-lg sm:text-2xl glow-cyan uppercase mb-1">
                 IT'S A TIE!
@@ -68,7 +102,7 @@ export default function GameOverScreen({
             </h2>
           )}
 
-          {result.scores.length > 0 && (
+          {!result.daily && result.scores.length > 0 && (
             <div className="mt-6 flex flex-col gap-1.5">
               {result.scores.map(({ id, name, score }, i) => (
                 <div
@@ -84,12 +118,47 @@ export default function GameOverScreen({
             </div>
           )}
 
+          <p className="font-display text-xs glow-cyan tracking-widest mt-6 mb-2">TRACKLIST</p>
+          <ol className="flex flex-col gap-2">
+            {result.recap.map((song, i) => (
+              <li key={i} className="flex items-center gap-3 border border-cyan-400/15 p-2">
+                {song.artwork && (
+                  <img src={song.artwork} alt="" className="h-10 w-10 shrink-0" />
+                )}
+                <div className="min-w-0 flex-1 font-body text-lg leading-tight">
+                  <p className="text-cyan-100 wrap-anywhere">{song.answer}</p>
+                  {song.artistUrl ? (
+                    <a
+                      href={song.artistUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-arcade-magenta underline wrap-anywhere"
+                    >
+                      {song.artist}
+                    </a>
+                  ) : (
+                    <p className="text-arcade-magenta wrap-anywhere">{song.artist}</p>
+                  )}
+                </div>
+                <span className="shrink-0 font-display text-[10px] text-right leading-relaxed">
+                  {song.guessers.length === 0 && <span className="text-yellow-600/50">MISSED</span>}
+                  {song.guessers.map((g) => (
+                    <span key={g.id} className="block max-w-24 truncate glow-green">
+                      {result.daily ? "" : `${g.name.toUpperCase()} `}+{g.points}
+                    </span>
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ol>
+
           <button
-            onClick={onPlayAgain}
+            onClick={onClose}
             className="btn btn-yellow-fill w-full mt-6 py-3 text-sm tracking-widest"
           >
-            ▶ PLAY AGAIN
+            {closeLabel}
           </button>
+
           <div className="pixel-rule-rainbow mt-6" />
           <p className="font-display text-[7px] text-yellow-600/30 mt-3 text-center blink tracking-widest">
             INSERT COIN TO CONTINUE

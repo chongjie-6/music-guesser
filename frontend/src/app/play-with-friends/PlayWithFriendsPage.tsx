@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { socket } from "../../socket";
 import { CreateRoomButton } from "../../components/buttons/CreateRoomButton";
 import { JoinRoomButton } from "../../components/buttons/JoinRoomButton";
 import InfiniteLooper from "../../components/InfiniteLooper";
@@ -81,7 +80,7 @@ export default function PlayWithFriendsPage() {
 
           <div className="flex flex-wrap gap-3">
             <JoinRoomButton roomID={roomID} />
-            <CreateRoomButton socket={socket} />
+            <CreateRoomButton />
           </div>
 
           <div className="pixel-rule-yellow mt-8" />
