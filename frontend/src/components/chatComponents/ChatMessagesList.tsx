@@ -52,7 +52,7 @@ export default function ChatMessages({
               <span className="text-yellow-600/50 mx-1.5">&gt;</span>
               <span className="text-yellow-200/70">{message.message}</span>
               {message.type === "close" && (
-                <span className="glow-orange ml-2">CLOSE! (ONLY YOU SEE THIS)</span>
+                <span className="glow-orange ml-2">CLOSE!</span>
               )}
               {message.type === "solved" && (
                 <span className="glow-green ml-2">(ONLY PLAYERS WHO GOT IT SEE THIS)</span>
