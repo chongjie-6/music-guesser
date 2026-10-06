@@ -1,6 +1,6 @@
 # Beat The Drop 🎵
 
-A real-time multiplayer music guessing game. Players join a shared room, listen to 30-second song previews, and race to type the correct song title first. Built to explore WebSocket-driven architecture and real-time state synchronisation across multiple clients.
+A real-time multiplayer music guessing game. Players join a shared room, listen to song previews, and race to guess the track first. Built to explore WebSocket-driven architecture and real-time state synchronisation across multiple clients.
 
 ![Node.js](https://img.shields.io/badge/Node.js-22-green) ![React](https://img.shields.io/badge/React-19-blue) ![Socket.io](https://img.shields.io/badge/Socket.io-4.8-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
 
@@ -8,13 +8,16 @@ A real-time multiplayer music guessing game. Players join a shared room, listen 
 
 ## Features
 
-- **Multiplayer rooms** — create a room with a custom code and share it with friends
-- **Real-time gameplay** — guesses, scores, and round transitions sync instantly across all players
-- **10-round games** — each round plays a different song preview with artist, genre, and release year as hints
-- **Auto-skip timer** — the music stops after 15 seconds, then rounds skip after 5 more seconds if nobody guesses correctly
-- **Live leaderboard** — scores update in real time after each correct guess
-- **In-game chat** — chat doubles as the guess input; correct guesses are detected from chat messages
-- **Tie detection** — gracefully handles shared top scores at game end
+- **Multiplayer rooms** — share a room code or invite link; up to 8 players, with anyone past that joining as a spectator
+- **Host controls** — the room creator starts games, changes settings and can kick players; the role passes on if they leave
+- **Game settings** — rounds (5–20), music length (10–30s), genre and era filters, and three modes: guess the title, guess the artist, or multiple choice
+- **Hints over time** — the year shows first, then the genre, the artist, and finally the title's first letters, while pixelated album art sharpens
+- **Everyone can score** — a round lasts until every player has guessed it or time runs out; each correct guess scores 3 points in the first third of the music, 2 before it stops, 1 in the 5 silent seconds after
+- **Forgiving guesses** — accents, punctuation and small typos are accepted; near misses are only shown to the guesser, and players who got it can only chat with each other, so nobody can copy them
+- **Reconnects** — a reload or dropped connection rejoins the same game with the same score, mid-song
+- **No repeats** — songs don't repeat within a room until every matching song has been played
+- **Solo practice** and a **daily challenge** — the same 5 songs for everyone each day (UTC), with a shareable emoji result grid
+- **Reveals and recap** — album art on each answer, and a tracklist with artist links at the end of the game
 
 ---
 
@@ -23,7 +26,7 @@ A real-time multiplayer music guessing game. Players join a shared room, listen 
 ### Backend
 - **Node.js + Express 5** — HTTP server and middleware
 - **Socket.io** — WebSocket server handling all real-time events
-- **Neon** — serverless PostgreSQL, queried with `pg` through a `get_random_songs()` SQL function
+- **Neon** — serverless PostgreSQL, queried with `pg` through a read-only role
 - **express-rate-limit** — rate limiting (50 req/min per IP)
 
 ### Frontend
@@ -49,44 +52,31 @@ Client (React)
     │  Socket.io events
     ▼
 Server (Express + Socket.io)
-    ├── roomHandler    — create / join / leave rooms
-    ├── gameHandler    — start game, round timers, skip logic
-    ├── messageHandler — chat messages + guess validation
-    └── userHandler    — username management
+    ├── roomHandler    — create / join / leave, settings, kicks, host handover
+    ├── gameHandler    — start game, round timers, hints, multiple choice picks
+    └── messageHandler — chat messages + guess validation
     │
     ▼
 Neon (PostgreSQL)
-    └── get_random_songs() function
+    └── songs + artists tables
 ```
 
 ### Game loop
 
-1. A player emits `start-game` → server fetches 10 distinct random songs from Neon and emits `game-started` to the room
-2. A timer starts on the server: after 15 seconds `game-music-stop` pauses the song for everyone, and after 5 more silent seconds the round is skipped and the next song is played
-3. Players type guesses as chat messages via `send-message`
-4. The server normalises the guess (lowercase, diacritics stripped, punctuation removed) and compares it to the normalised song title
-5. On a correct guess: the timer is cleared, 1 point is awarded, and `game-correct-guess` + the next round data are emitted to the room
-6. After 10 rounds, `game-end` is emitted with final scores, winner, and tie status
+1. The host emits `start-game` → the server fetches songs matching the room's settings (skipping ones already played in the room) and emits `game-started`, then `game-round`
+2. A timer runs on the server: every quarter of the music it emits `game-hint`, then `game-music-stop` pauses the song for everyone, and 5 silent seconds later the round ends with no winner
+3. Players type guesses as chat messages via `send-message` (or `pick-option` in multiple choice)
+4. The server normalises the guess and compares it to the answer with a small typo allowance; near misses go back only to the sender
+5. A correct guess scores by speed and the guesser gets `guess-result`; once every connected player has it (or used their pick), or time runs out, `round-end` (the reveal) + the next `game-round` are emitted
+6. After the last round, `game-end` is emitted with final scores, winner, tie status and the tracklist
 
 ### Room lifecycle
 
-Rooms exist purely in Socket.io's adapter (no database). When the last player leaves or disconnects, the server clears the round timer and deletes the in-memory game state — handled via Socket.io's `disconnecting` event (which fires before the socket leaves its rooms).
+Rooms live in memory on the server (no database). Each browser tab sends a random secret key when it connects; the server identifies the player by its hash, so a reconnecting tab gets its seat and score back while other players only ever see the hash. When nobody is connected, the room is destroyed after a 30-second grace period, along with its timer and game state.
 
 ### Text normalisation
 
-Guesses are normalised before comparison to handle accented characters, featured artist annotations, version suffixes, and punctuation differences:
-
-```js
-const normalizeText = (value = "") => {
-  const text = String(value)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")           // strip diacritics
-    .replace(/[([（［][^)\]）］]*[)\]）］]/g, "") // remove bracketed text
-    .replace(/\s+-\s.*$/, "");                 // remove " - Remastered 2011" style suffixes
-  return text.replace(/[^a-z0-9]/g, "") || text.replace(/[^\p{L}\p{N}]/gu, "");
-};
-```
+Guesses are normalised before comparison to handle accented characters, featured artist annotations, version suffixes, and punctuation differences: lowercase, strip diacritics, drop bracketed text like `(feat. ...)` and `- Remastered 2011` suffixes, then keep only letters and digits. The result is compared with Levenshtein distance — 1 typo allowed for answers over 4 characters, 2 for answers over 8.
 
 ---
 
@@ -96,12 +86,12 @@ const normalizeText = (value = "") => {
 |---|---|
 | **WebSockets** | Bidirectional real-time communication with Socket.io; event-driven architecture with no REST endpoints at runtime |
 | **Real-time state sync** | Game state (scores, round, current song) kept on the server and pushed to all clients; no client polls |
-| **Room & session management** | In-memory room lifecycle using Socket.io's adapter; proper cleanup on disconnect using the `disconnecting` event |
-| **Timer management** | Per-room `setTimeout` tracked in a `Map`; cleared on correct guess or room destruction to prevent ghost timers |
+| **Room & session management** | In-memory rooms with hosts, spectators and reconnects keyed by a hashed client secret; cleanup on disconnect using the `disconnecting` event |
+| **Timer management** | One chained `setTimeout` per room drives hints, the music stop and the skip; cleared on correct guess or room destruction to prevent ghost timers |
 | **Containerisation** | Multi-stage Dockerfile: stage 1 builds the Vite frontend, stage 2 runs the Node server with the compiled assets baked in |
 | **TypeScript** | Typed socket events, component props, and shared game types across the frontend |
 | **React 19** | Enabled the experimental React Compiler; custom hooks to encapsulate socket event listeners |
-| **Database integration** | Neon PostgreSQL with a server-side SQL function for random song selection, read through a read-only role |
+| **Database integration** | Neon PostgreSQL with parameterised filtering, exclusion and seeded ordering (for the daily challenge), read through a read-only role |
 | **Security basics** | Rate limiting, CORS allowlist, `.env` for secrets, non-root Docker user |
 | **Text processing** | Unicode normalisation + regex pipeline to make guessing forgiving of accents and punctuation |
 
@@ -156,12 +146,12 @@ Apply new files in `backend/migrations/` in order, as the owner role, with `psql
 │   ├── middleware/      # Rate limiter
 │   ├── sockets/
 │   │   ├── index.js
-│   │   └── handlers/    # gameHandler, roomHandler, messageHandler, userHandler
+│   │   └── handlers/    # gameHandler, roomHandler, messageHandler
 │   └── service/         # gameService, roomService, songService
 ├── frontend/
 │   └── src/
 │       ├── app/         # Page components (Home, PlayWithFriends, Room)
-│       ├── components/  # Buttons, chat, game over screen
+│       ├── components/  # Buttons, chat, round/settings/players panels, game over screen
 │       ├── hooks/       # Socket event hooks
 │       └── types/
 ├── backend/Dockerfile   # Multi-stage build
