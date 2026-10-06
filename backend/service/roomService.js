@@ -47,7 +47,7 @@ const deleteRoom = (room) => {
   rooms.delete(room.id);
 };
 
-const isRunning = (room) => ["loading", "active"].includes(room.game?.status);
+const isRunning = (room) => ["loading", "active", "break"].includes(room.game?.status);
 
 const seatedPlayers = (room) => [...room.players.values()].filter((p) => !p.spectator);
 

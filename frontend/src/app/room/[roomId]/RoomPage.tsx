@@ -10,6 +10,7 @@ import GameOverScreen from "../../../components/GameOverScreen";
 import RoomNotFoundModal from "../../../components/RoomNotFound";
 import InfiniteLooper from "../../../components/InfiniteLooper";
 import RoundPanel from "../../../components/RoundPanel";
+import RoundResults from "../../../components/RoundResults";
 import SettingsPanel from "../../../components/SettingsPanel";
 import PlayersPanel from "../../../components/PlayersPanel";
 import Star from "../../../components/Star";
@@ -19,7 +20,7 @@ export default function RoomPage() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { error, joinError, me, room, round, reveal, gameEnd, deadline, resetGame } =
+  const { error, joinError, me, room, round, reveal, roundBreak, gameEnd, deadline, resetGame } =
     useGameEvents(roomId, audioRef);
 
   useJoinRoom(roomId);
@@ -55,6 +56,10 @@ export default function RoomPage() {
           onClose={gameEnd.daily ? () => navigate("/") : resetGame}
           closeLabel={gameEnd.daily ? "◀ BACK HOME" : "▶ BACK TO LOBBY"}
         />
+      )}
+      {/* The last round goes straight to the game over screen */}
+      {roundBreak && room && round && reveal && round.round < round.totalRounds && (
+        <RoundResults key={round.round} room={room} round={round} reveal={reveal} me={me} />
       )}
       <main className="relative min-h-screen bg-pixel-grid overflow-hidden">
         {/* Top marquee */}

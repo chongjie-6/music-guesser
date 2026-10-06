@@ -67,7 +67,7 @@ Neon (PostgreSQL)
 2. A timer runs on the server: every quarter of the music it emits `game-hint`, then `game-music-stop` pauses the song for everyone, and 5 silent seconds later the round ends with no winner
 3. Players type guesses as chat messages via `send-message` (or `pick-option` in multiple choice)
 4. The server normalises the guess and compares it to the answer with a small typo allowance; near misses go back only to the sender
-5. A correct guess scores by speed and the guesser gets `guess-result`; once every connected player has it (or used their pick), or time runs out, `round-end` (the reveal) + the next `game-round` are emitted
+5. A correct guess scores by speed and the guesser gets `guess-result`; once every connected player has it (or used their pick), or time runs out, `round-end` (the reveal) is emitted, clients show a round leaderboard, and the next `game-round` follows after a 5 second break
 6. After the last round, `game-end` is emitted with final scores, winner, tie status and the tracklist
 
 ### Room lifecycle
@@ -151,7 +151,7 @@ Apply new files in `backend/migrations/` in order, as the owner role, with `psql
 ├── frontend/
 │   └── src/
 │       ├── app/         # Page components (Home, PlayWithFriends, Room)
-│       ├── components/  # Buttons, chat, round/settings/players panels, game over screen
+│       ├── components/  # Buttons, chat, round/settings/players panels, round results, game over screen
 │       ├── hooks/       # Socket event hooks
 │       └── types/
 ├── backend/Dockerfile   # Multi-stage build

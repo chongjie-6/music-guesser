@@ -2,6 +2,7 @@ const { playerFor, isRunning, broadcastRoom, systemMessage } = require("../../se
 const {
   HINT_STAGES,
   SILENT_GUESS_MS,
+  ROUND_BREAK_MS,
   startGame,
   beginRound,
   roundPayload,
@@ -52,7 +53,7 @@ const startRound = (io, room) => {
 };
 
 /**
- * Reveals the answer, then starts the next round or ends the game.
+ * Reveals the answer, then starts the next round after a break or ends the game.
  */
 const endRound = (io, room) => {
   clearRoomTimer(room);
@@ -62,7 +63,10 @@ const endRound = (io, room) => {
   io.in(room.id).emit("round-end", reveal);
   systemMessage(io, room, reveal.guessers.length ? `ANSWER: ${answer}` : `NOBODY GOT IT! · ${answer}`);
 
-  if (!result) return startRound(io, room);
+  if (!result) {
+    room.timer = setTimeout(() => startRound(io, room), ROUND_BREAK_MS);
+    return;
+  }
   io.in(room.id).emit("game-end", result);
   broadcastRoom(io, room);
   systemMessage(io, room, "GAME OVER");

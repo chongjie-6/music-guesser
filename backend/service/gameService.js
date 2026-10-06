@@ -3,6 +3,7 @@ const { prepareForGame, seatedPlayers } = require("./roomService");
 
 const HINT_STAGES = 4;
 const SILENT_GUESS_MS = 5000;
+const ROUND_BREAK_MS = 5000;
 const MAX_POINTS = 1000;
 const LATER_GUESS_PENALTY = 50;
 
@@ -169,6 +170,7 @@ const startGame = async (room) => {
 
 const beginRound = (room) => {
   const game = room.game;
+  game.status = "active";
   game.round += 1;
   game.stage = 0;
   game.musicStopped = false;
@@ -287,6 +289,7 @@ const computeResult = (room) => {
 
 /**
  * Ends the current round. Returns the reveal, plus the final result if that was the last round.
+ * Otherwise the game takes a break, so nobody can score with the revealed answer.
  */
 const finishRound = (room) => {
   const game = room.game;
@@ -300,7 +303,10 @@ const finishRound = (room) => {
   };
   game.recap.push(reveal);
 
-  if (game.round < game.songs.length) return { reveal, result: null };
+  if (game.round < game.songs.length) {
+    game.status = "break";
+    return { reveal, result: null };
+  }
   game.status = "over";
   return { reveal, result: computeResult(room) };
 };
@@ -308,6 +314,7 @@ const finishRound = (room) => {
 module.exports = {
   HINT_STAGES,
   SILENT_GUESS_MS,
+  ROUND_BREAK_MS,
   normalizeText,
   judgeGuess,
   artistAnswers,

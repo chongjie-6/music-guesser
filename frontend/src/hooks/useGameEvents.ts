@@ -12,6 +12,7 @@ export function useGameEvents(
   const [room, setRoom] = useState<RoomState | null>(null);
   const [round, setRound] = useState<GameRound | null>(null);
   const [reveal, setReveal] = useState<Reveal | null>(null);
+  const [roundBreak, setRoundBreak] = useState(false);
   const [gameEnd, setGameEnd] = useState<GameEnd | null>(null);
   const [deadline, setDeadline] = useState<number | null>(null);
 
@@ -21,6 +22,7 @@ export function useGameEvents(
     setRoom(null);
     setRound(null);
     setReveal(null);
+    setRoundBreak(false);
     setGameEnd(null);
   }, [roomId]);
 
@@ -37,6 +39,7 @@ export function useGameEvents(
     });
     socket.on("game-round", (payload: GameRound) => {
       setRound(payload);
+      setRoundBreak(false);
       setDeadline(Date.now() + payload.timeLeftMs);
     });
     socket.on("game-hint", (update: { stage: number; hints: Hints }) => {
@@ -53,9 +56,14 @@ export function useGameEvents(
     socket.on("guess-result", (solved: Solved) => {
       setRound((r) => r && { ...r, solved });
     });
-    socket.on("round-end", (payload: Reveal) => setReveal(payload));
+    socket.on("round-end", (payload: Reveal) => {
+      setReveal(payload);
+      setRoundBreak(true);
+      setDeadline(null);
+    });
     socket.on("game-end", (result: GameEnd) => {
       setGameEnd(result);
+      setRoundBreak(false);
       setDeadline(null);
       audioRef.current?.pause();
     });
@@ -86,5 +94,5 @@ export function useGameEvents(
     setReveal(null);
   };
 
-  return { error, joinError, me, room, round, reveal, gameEnd, deadline, resetGame };
+  return { error, joinError, me, room, round, reveal, roundBreak, gameEnd, deadline, resetGame };
 }
